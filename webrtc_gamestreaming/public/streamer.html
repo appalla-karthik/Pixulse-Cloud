@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pixulse Streamer Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Press Start 2P', cursive;
+     background: radial-gradient(circle, #c084fc, #6366f1, #111827);
+
+
+
+
+      color: #00ffaa;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 30px;
+      margin-bottom: 40px;
+      color: #1c1917;
+    }
+.glow-on-hover {
+    width: 200px;
+    height: 50px;
+    outline: none;
+    color: #ffffff;
+    background: linear-gradient(90deg, #ff007f, #5700ff);
+    border: none;
+    cursor: pointer;
+    position: relative;
+    z-index: 0;
+    border-radius: 30px;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    transition: transform 0.2s, background 0.5s;
+
+    overflow: hidden;
+
+}
+.glow-on-hover:hover {
+
+    transform: scale(1.1);
+    animation: pulse 1.2s infinite alternate;
+}
+
+.glow-on-hover::before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    width: calc(100% + 4px);
+    height: calc(100% + 4px);
+    background: linear-gradient(90deg, #ff007f, #01d2d9, #6619ff, #ff007f);
+    background-size: 400%;
+    z-index: -1;
+    filter: blur(13px);
+    animation: neon-glow 6s infinite linear;
+    border-radius: 30px;
+}
+.glow-on-hover:active {
+    transform: scale(0.98);
+    background: #ff007f;
+}
+.pixel-btn {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0px 0px 0px 0px;
+    color: white;
+    background: black;
+    padding: 12px 30px;
+    border: 4px solid white;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: 0.3s;
+    position: relative;
+    font-family: 'Press Start 2P', cursive;
+    image-rendering: pixelated;
+}
+
+.pixel-btn:hover {
+    background: white;
+    color: black;
+    border-color: black;
+}
+@keyframes neon-glow {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+    
+  </style>
+</head>
+<body>
+  <h1> Pixulse Cloud Streamer Panel</h1>
+  <button onclick="setupStream()" class="pixel-btn glow-on-hover" type="button"
+                    style="width: 400px;height: 60px; letter-spacing: 2px;">
+                     Start Streaming
+                </button>
+
+  <script>
+    const ws = new WebSocket(`ws://localhost:8080`);
+    let stream;
+    const connections = {};
+
+    async function setupStream() {
+      try {
+        stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+
+        stream.getVideoTracks()[0].addEventListener('ended', () => {
+          for (const id in connections) {
+            connections[id].close();
+          }
+        });
+
+      } catch (err) {
+        alert('Permission denied or no screen selected.');
+      }
+    }
+
+    ws.addEventListener('open', () => {
+      ws.send(JSON.stringify({ type: 'register', role: 'streamer' }));
+    });
+
+    ws.addEventListener('message', async (event) => {
+      const msg = JSON.parse(event.data);
+
+      if (msg.type === 'viewer-connected') {
+        const pc = new RTCPeerConnection();
+        stream.getTracks().forEach(track => pc.addTrack(track, stream));
+
+        pc.onicecandidate = e => {
+          if (e.candidate) {
+            ws.send(JSON.stringify({
+              type: 'ice-candidate',
+              data: e.candidate,
+              to: msg.id
+            }));
+          }
+        };
+
+        connections[msg.id] = pc;
+
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        ws.send(JSON.stringify({
+          type: 'offer',
+          data: offer,
+          to: msg.id
+        }));
+      }
+
+      if (msg.type === 'answer' && msg.from && connections[msg.from]) {
+        await connections[msg.from].setRemoteDescription(new RTCSessionDescription(msg.data));
+      }
+
+      if (msg.type === 'ice-candidate' && msg.from && connections[msg.from]) {
+        await connections[msg.from].addIceCandidate(new RTCIceCandidate(msg.data));
+      }
+    });
+  </script>
+</body>
+</html>
