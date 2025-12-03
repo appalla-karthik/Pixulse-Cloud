@@ -1,0 +1,19 @@
+{
+  "name": "webrtc_gamestreaming",
+  "version": "1.0.0",
+  "main": "server/signaling_server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server/signaling_server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@nut-tree-fork/nut-js": "^4.2.6",
+    "express": "^4.18.2",
+    "robotjs": "^0.6.0",
+    "ws": "^8.18.2"
+  }
+}

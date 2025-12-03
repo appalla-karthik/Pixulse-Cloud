@@ -1,0 +1,152 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{game.title}}</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <style>
+        body {
+
+            color: white;
+        }
+
+        .container {
+            margin: 0px 0px 0px 0px;
+        }
+
+        .game-container {
+            background-image: url("{{ game.background.url }}");
+            background-size: cover;
+            position: relative;
+
+            height: 640px;
+            width: 1500px;
+        }
+
+        .game-container::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 101%;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.667) 10%, #1313134d 20%, #131313);
+            z-index: 0;
+            /* Keep it behind text */
+        }
+
+        .game-container h1,
+        .game-container p,
+        .game-container img,
+        .game-container button,
+        .game-container .genres {
+            position: relative;
+            /* Ensure they are above the gradient */
+            z-index: 1;
+            margin-left: 100px;
+        }
+
+        .genres span {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 10px;
+            margin: 5px;
+            display: inline-block;
+        }
+
+        .game-image {
+            height: 200px;
+            margin: 200px 0px 50px 0px;
+
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#"><img src="{% static 'img/logo.png' %}" alt=""></a>
+            </div>
+            <ul class="nav navbar-nav">
+                <li class=" brandname active"><a href="#"><b>PIXULSE CLOUD
+                            BETA</b></a></li>
+            </ul>
+            <form class="navbar-form navbar-right" action="/action_page.php">
+                <div class="search-container">
+                    <button class="search-btn">
+                        <i class="glyphicon glyphicon-search"></i>
+                    </button>
+                    <div class="search-dropdown">
+                        <input type="text" class="search-input" placeholder="Search...">
+                    </div>
+                </div>
+
+
+            </form>
+            <ul class="nav navbar-nav navbar-right">
+                <li class="active" style="margin-right: 10px;"><a href="{% url 'home' %}" class="nav-button">HOME</a></li>
+                <li style="margin-right: 10px;"><a href="#" class="nav-button">USERVERSE</a></li>
+                <li style="margin-right: 10px;"><a href="#" class="nav-button">GUILDNEXUS</a></li>
+                <li class="dropdown" style="margin-right: 10px;">
+                    <a href="#" class="dropdown-toggle nav-button" data-toggle="dropdown" role="button"
+                        aria-haspopup="true" aria-expanded="false">
+                        ARENA INSIGHTS
+                    </a>
+                    <ul class="dropdown-menu custom-dropdown">
+                        <li><a href="#">Latest Trends</a></li>
+                        <li><a href="#">Industry Insights</a></li>
+                        <li><a href="#">Workshops</a></li>
+                    </ul>
+                </li>
+                <li style="margin-right: 10px;"><a href="#" class="nav-button"></span> ESPORTS</a></li>
+                {% if user.is_authenticated %}
+                <li><a href="accounts/logout">LOGOUT</a></li>
+                {% else %}
+                <li style="margin-right: 10px;"><a href="{% url 'register' %}" class="nav-button">SIGN IN</a></li>
+                <li style="margin-right: 10px;"><a href="{% url 'login' %}" class="nav-button">LOGIN</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+    <div class="game-container">
+        <div class="container">
+            <img src="{{ game.logo.url }}" alt="{{ game.title }}" class="game-image">
+
+            <h1>{{ game.title }}</h1><br>
+            <a href="http://localhost:3000/client.html" target="_blank">
+                <button class="pixel-btn glow-on-hover" type="button"
+                    style="width: 300px;height: 50px; letter-spacing: 0px;">
+                    Subscribe & Play
+                </button>
+            </a>
+            <br>
+            <p style="margin: 100px 0px 0px 100px; font-size: 25px">
+                About Game:
+            </p><br>
+
+            <p>{{ game.about }}</p>
+            <p><strong>Developer:</strong> {{ game.developer }}</p>
+            <p><strong>Release Date:</strong> {{ game.release_date }}</p>
+            <p><strong>Age Rating:</strong> {{ game.age_rating }}</p>
+            <p><strong>Website:</strong>
+                <a href="{{ game.official_website }}" target="_blank">{{ game.official_website }}</a>
+            </p>
+
+            <div class="genres">
+                <strong>Genres:</strong>
+                {% for genre in game.genres.all %}
+                <span>{{ genre.name }}</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
