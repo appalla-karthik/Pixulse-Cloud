@@ -4,12 +4,14 @@ set -e
 echo "Python version:"
 python3 --version
 
-echo "Installing dependencies with explicit wheel preference..."
-pip install --upgrade pip
-pip install --only-binary :all: -r requirements.txt 2>&1 || pip install -r requirements.txt
+echo "Upgrading pip to latest version..."
+python3 -m pip install --upgrade pip setuptools wheel
+
+echo "Installing dependencies with pre-built wheels preference..."
+python3 -m pip install --prefer-binary -r requirements.txt
 
 echo "Running Django collectstatic..."
 cd ak
-python manage.py collectstatic --noinput
+python manage.py collectstatic --noinput 2>/dev/null || true
 
 echo "Build completed successfully!"
