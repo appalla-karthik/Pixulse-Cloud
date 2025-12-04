@@ -1,7 +1,6 @@
 ## Pixulse Cloud – WebRTC Game Streaming Platform
 
 Pixulse Cloud is a custom WebRTC-based game streaming system that enables low-latency streaming of a host PC’s screen to any browser.
-It also supports real-time keyboard and mouse control from the viewer, executed on the host machine using nut.js or robotjs.
 
 This repository includes:
 
@@ -21,3 +20,4 @@ This repository includes:
 
 - Frontend: HTML, CSS, JavaScript, WebRTC
 - Backend: Node.js (WebSocket signaling), Django (web app integration)
+
