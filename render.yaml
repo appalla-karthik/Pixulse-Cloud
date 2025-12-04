@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: pixulse-cloud
+    runtime: python-3.12
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "cd ak && gunicorn ak.wsgi"
