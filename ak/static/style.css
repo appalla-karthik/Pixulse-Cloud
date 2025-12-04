@@ -22,7 +22,12 @@ h2 {
 .navbar-brand img {
     height: 50px;
     transition: .2s;
-    width: auto; margin: -17px 0px 0px 0px;
+    width: auto; margin: -8px 0px 0px 0px;
+}
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 20px;
 }
 
 .nav-button {
@@ -822,10 +827,13 @@ h3 {
 }
 
 .brandname {
-    font-size: 13px;
+    font-size: 14px;
+    color: #ffffff;
     letter-spacing: 2px;
-    margin: 0px 0px 0px -20px;
+    font-weight: bold;
+    
 }
+
 
 /* ==================== RESPONSIVE STYLES ==================== */
 
@@ -892,10 +900,21 @@ h3 {
         margin: -5px 0 0 0 !important;
     }
 
-    /* Hide “PIXULSE CLOUD BETA” next to logo */
-    .brandname {
-        display: none !important;
-    }
+    
+.brandname {
+    display: inline-block !important;
+    color: white;
+    font-size: 10px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+/* Ensure navbar brand stays aligned properly */
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
 
     /* SEARCH BAR ON MOBILE */
     .navbar-form {
@@ -1006,9 +1025,13 @@ h3 {
     }
     
     .product-image {
-        height: 250px;
+        height: 220px;
     }
-    
+    .product-card {
+    height: 240px !important;       /* Reduce card height */
+    border-radius: 10px;
+    margin:20px 0px 0px 0px
+}
     .product-details {
         font-size: 10px;
         padding: 8px;
@@ -1057,13 +1080,23 @@ h3 {
     }
     
     .genre-card {
-        margin-bottom: 15px;
-    }
+    width: 46% !important;   /* Two cards per row */
+    height: 150px !important; /* Smaller height */
+    margin: 0 2% 15px 2% !important; /* Spacing */
+    border-radius: 10px;
+}
     
-    .genre-title {
-        font-size: 10px;
-        padding: 8px 0;
-    }
+.genre-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+    
+.genre-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
     
     .ad {
         height: 400px;
@@ -1106,6 +1139,7 @@ h3 {
     
     .footer-container {
         flex-direction: column;
+        
     }
     
     .footer-section {
