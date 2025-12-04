@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'style.css' %}">
-
 </head>
 
 <body>
@@ -21,34 +20,46 @@
     <script src="{% static 'script.js' %}" defer></script>
 
     <nav class="navbar navbar-inverse navbar-fixed-top">
-        <div class="container-fluid">
-            <div class="navbar-header">
-                <a class="navbar-brand" href="#"><img src="{% static 'img/logo.png' %}" alt=""></a>
-            </div>
-            <ul class="nav navbar-nav">
-                <li class=" brandname active"><a href="#"><b>PIXULSE CLOUD
-                            BETA</b></a></li>
-            </ul>
-            <form class="navbar-form navbar-right" action="/action_page.php">
-                <div class="search-container">
-                    <button class="search-btn">
-                        <i class="glyphicon glyphicon-search"></i>
-                    </button>
-                    <div class="search-dropdown">
-                        <input type="text" class="search-input" placeholder="Search...">
-                    </div>
+    <div class="container-fluid">
+
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#mainNav">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <a class="navbar-brand" href="#">
+                <img src="{% static 'img/logo.png' %}" alt="Pixulse Cloud">
+            </a>
+        </div>
+
+        <!-- RIGHT SEARCH (Hidden in mobile) -->
+        <form class="navbar-form navbar-right hidden-xs">
+            <div class="search-container">
+                <button class="search-btn">
+                    <i class="glyphicon glyphicon-search"></i>
+                </button>
+                <div class="search-dropdown">
+                    <input type="text" class="search-input" placeholder="Search...">
                 </div>
+            </div>
+        </form>
 
+        <!-- COLLAPSING NAV LINKS -->
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="nav navbar-nav">
+                <li class="brandname active"><a href="#"><b>PIXULSE CLOUD BETA</b></a></li>
+            </ul>
 
-            </form>
             <ul class="nav navbar-nav navbar-right">
-                <li class="active" style="margin-right: 10px;"><a href="#" class="nav-button">HOME</a></li>
-                <li style="margin-right: 10px;"><a href="#" class="nav-button">USERVERSE</a></li>
-                <li style="margin-right: 10px;"><a href="#" class="nav-button">GUILDNEXUS</a></li>
-                <li class="dropdown" style="margin-right: 10px;">
-                    <a href="#" class="dropdown-toggle nav-button" data-toggle="dropdown" role="button"
-                        aria-haspopup="true" aria-expanded="false">
-                        ARENA INSIGHTS
+                <li class="active"><a href="#" class="nav-button">HOME</a></li>
+                <li><a href="#" class="nav-button">USERVERSE</a></li>
+                <li><a href="#" class="nav-button">GUILDNEXUS</a></li>
+
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle nav-button" data-toggle="dropdown">
+                        ARENA INSIGHTS <span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu custom-dropdown">
                         <li><a href="#">Latest Trends</a></li>
@@ -56,15 +67,21 @@
                         <li><a href="#">Workshops</a></li>
                     </ul>
                 </li>
-                <li style="margin-right: 10px;"><a href="#" class="nav-button"></span> ESPORTS</a></li>
+
+                <li><a href="#" class="nav-button">ESPORTS</a></li>
+
                 {% if user.is_authenticated %}
-                <li><a href="{% url 'logout' %}">Logout</a></li>
+                    <li><a href="{% url 'logout' %}">Logout</a></li>
                 {% else %}
-                <li style="margin-right: 10px;"><a href="{% url 'login' %}" class="nav-button">LOGIN</a></li>
+                    <li><a href="{% url 'login' %}" class="nav-button">LOGIN</a></li>
                 {% endif %}
             </ul>
         </div>
-    </nav>
+
+    </div>
+</nav>
+
+
     {% if user.is_authenticated %}
         <div style="height: 80px;"></div>
         <div style="height: 15px;font-size: 30px;color:white;list-style-type: none;padding:30px 0px 0px 30px;">
@@ -87,7 +104,7 @@
                 <img src="{% static 'img/img1.jpg' %}" alt="Fallout 4">
                 <div class="game-info">
                     <h2>Assassin's Creed Origins</h2>
-                    <p>Discover the origin of the Assassin’s Brotherhood</p>
+                    <p>Discover the origin of the Assassin's Brotherhood</p>
                 </div>
             </div>
             <div class="swiper-slide">
@@ -135,29 +152,31 @@
 
     <div class="container-fluid game-cards1">
         <div class="row align-items-center">
-            <div class="col-md-4">
+            <div class="col-md-4 col-sm-6 col-xs-12">
                 <span class="custom-title" style="align-content: center;font-family: 'Press Start 2P', cursive;">
                     MOST POPULAR ON CLOUD
                 </span>
             </div>
-            <div class="col-md-4"></div>
-            <div class="col-md-4">
+            <div class="col-md-4 col-sm-0 col-xs-0"></div>
+            <div class="col-md-4 col-sm-6 col-xs-12">
                 <button class="pixel-btn glow-on-hover" type="button">VIEW ALL</button>
             </div>
         </div>
     
-        {% for game in games %}
-        <div style="width: 16%;float: left;">
-            <div class="product-card">
-                <a href="{% url 'game_detail' game_id=game.id %}">
-                    <img src="{{ game.image.url }}" alt="{{ game.title }}" class="product-image">
-                    <div class="product-details">
-                        <span>{{ game.title }}</span>
-                    </div>
-                </a>
+        <div class="game-row">
+            {% for game in games %}
+            <div style="width: 16%;float: left;">
+                <div class="product-card">
+                    <a href="{% url 'game_detail' game_id=game.id %}">
+                        <img src="{{ game.image.url }}" alt="{{ game.title }}" class="product-image">
+                        <div class="product-details">
+                            <span>{{ game.title }}</span>
+                        </div>
+                    </a>
+                </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
     
     <div style="height: 70px;"></div>
@@ -181,7 +200,7 @@
 
         <div class="slider-container">
             <div class="slider1">
-                <div class="slide-track">'
+                <div class="slide-track">
                     <img src="{% static 'img/dummy1.png' %}" alt="Game 1">
                     <img src="{% static 'img/dummy2.jpeg' %}" alt="Game 2">
                     <img src="{% static 'img/dummy3.jpeg' %}" alt="Game 3">
@@ -213,89 +232,72 @@
         </div>
     </center>
     <div style="height: 50px;"></div>
-    <div class="container-fluid" style="width: 102%;justify-content: center;">
-
+    
+    <div class="container-fluid action-section">
         <div class="row align-items-center">
-            <div class="col-md-4">
-                <span class="custom-title" style="align-content: center;font-family: 'Press Start 2P', cursive;">ACTION
-                    UNLEASHED</span>
+            <div class="col-md-4 col-sm-6 col-xs-12">
+                <span class="custom-title" style="align-content: center;font-family: 'Press Start 2P', cursive;">ACTION UNLEASHED</span>
             </div>
-            <div class="col-md-4">
-            </div>
-            <div class="col-md-4">
+            <div class="col-md-4 col-sm-0 col-xs-0"></div>
+            <div class="col-md-4 col-sm-6 col-xs-12">
                 <button class="pixel-btn glow-on-hover" type="button">VIEW ALL</button>
             </div>
         </div>
 
-        <div style="width: 16%;float: left;">
-            <div class="product-card">
-                <img src="{% static 'img/mobile1.webp' %}" alt="Product Image" class="product-image">
-                <div class="product-details">
-                    <span>Playerunkonwn's Battlegrounds Mobile India</span>
-
-
-
+        <div class="game-row">
+            <div style="width: 16%;float: left;">
+                <div class="product-card">
+                    <img src="{% static 'img/mobile1.webp' %}" alt="Product Image" class="product-image">
+                    <div class="product-details">
+                        <span>Playerunkonwn's Battlegrounds Mobile India</span>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div style="width: 16%;float: left;">
-            <div class="product-card">
-                <img src="{% static 'img/mobile2.webp' %}" alt="Product Image" class="product-image">
-                <div class="product-details">
-                    <span>Fortnite</span>
-
-
-
+            <div style="width: 16%;float: left;">
+                <div class="product-card">
+                    <img src="{% static 'img/mobile2.webp' %}" alt="Product Image" class="product-image">
+                    <div class="product-details">
+                        <span>Fortnite</span>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div style="width: 16%;float: left;">
-            <div class="product-card">
-                <img src="{% static 'img/mobile3.webp' %}" alt="Product Image" class="product-image">
-                <div class="product-details">
-                    <span>Genshin Impact</span>
-
-
+            <div style="width: 16%;float: left;">
+                <div class="product-card">
+                    <img src="{% static 'img/mobile3.webp' %}" alt="Product Image" class="product-image">
+                    <div class="product-details">
+                        <span>Genshin Impact</span>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div style="width: 16%;float: left;">
-            <div class="product-card">
-                <img src="{% static 'img/mobile4.webp' %}" alt="Product Image" class="product-image">
-                <div class="product-details">
-                    <span>Counter-Strike 2</span>
-
-
+            <div style="width: 16%;float: left;">
+                <div class="product-card">
+                    <img src="{% static 'img/mobile4.webp' %}" alt="Product Image" class="product-image">
+                    <div class="product-details">
+                        <span>Counter-Strike 2</span>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div style="width: 16%;float: left;">
-            <div class="product-card">
-                <img src="{% static 'img/mobile5.webp' %}" alt="Product Image" class="product-image">
-                <div class="product-details">
-                    <span>Mortal Kombat 11</span>
-
-
+            <div style="width: 16%;float: left;">
+                <div class="product-card">
+                    <img src="{% static 'img/mobile5.webp' %}" alt="Product Image" class="product-image">
+                    <div class="product-details">
+                        <span>Mortal Kombat 11</span>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div style="width: 16%;float: left;">
-            <div class="product-card">
-                <img src="{% static 'img/mobile6.webp' %}" alt="Product Image" class="product-image">
-                <div class="product-details">
-                    <span>WWE 2k25</span>
-
-
+            <div style="width: 16%;float: left;">
+                <div class="product-card">
+                    <img src="{% static 'img/mobile6.webp' %}" alt="Product Image" class="product-image">
+                    <div class="product-details">
+                        <span>WWE 2k25</span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     <div style="height: 50px;"></div>
 
-
-
     <div class="genres-section">
-
         <h2 class="section-title">Explore by Genre</h2>
         <div class="row">
             <div class="col-md-2 col-sm-4 col-xs-6 genre-card">
@@ -328,7 +330,6 @@
     </div>
 
     <div class="ad">
-        <!-- Background Video -->
         <video autoplay muted loop class="background-video">
             <source src="{% static 'img/vid.mp4' %}" type="video/mp4">
             Your browser does not support the video tag.
@@ -337,45 +338,40 @@
         <h4>Stream, Play, Dominate</h4>
         <button class="pulse-button">Start free trial</button>
     </div>
-    <div class="container-fluid" style="padding:96px 10px 130px 10px;background-image: url('{%static 'img/bg.png' %}');
-        background-size: cover;">
+    
+    <div class="container-fluid" style="padding:96px 10px 130px 10px;background-image: url('{% static 'img/bg.png' %}');background-size: cover;">
         <div class="row">
-            <div class="col-md-4">
+            <div class="col-md-4 col-sm-12">
                 <div class="card">
                     <div class="card-overlay">
-
                         <p>Experience high-quality gaming from casual fun to AAA adventures.</p>
                     </div>
                 </div>
                 <h3 style="margin: 20px 0px 0px 110px;">Next-Level Gaming</h3>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-4 col-sm-12">
                 <div class="card c1">
                     <div class="card-overlay">
-
                         <p>Play seamlessly across all your devices without extra hardware.</p>
                     </div>
-
                 </div>
                 <h3 style="margin: 20px 0px 0px 88px;">Game Anywhere, Anytime</h3>
             </div>
-            <div class="col-md-4">
+            
+            <div class="col-md-4 col-sm-12">
                 <div class="card c2">
                     <div class="card-overlay">
-
-
                         <p>Start playing instantly with a single click—no downloads needed.</p>
                     </div>
-
                 </div>
                 <h3 style="margin: 20px 0px 0px 110px;">Jump In, No Waiting</h3>
             </div>
         </div>
     </div>
+    
     <footer class="footer">
         <div class="footer-container">
-            <!-- About Section -->
             <div class="footer-section">
                 <h3>About</h3>
                 <ul>
@@ -389,20 +385,18 @@
                 </ul>
             </div>
 
-            <!-- Resources Section -->
             <div class="footer-section">
                 <h3>Resources</h3>
                 <ul>
                     <li><a href="#">Pixulse Cloud SDK/API</a></li>
                     <li><a href="#">Parental Controls</a></li>
-                    <li><a href="#">Quick Start Guide (PC/MAC)</a></li>
-                    <li><a href="#">Quick Start Guide (Android)</a></li>
+                    <li><a href="#">Quick Start Guide(PC/MAC)</a></li>
+                    <li><a href="#">Quick Start Guide(Android)</a></li>
                     <li><a href="#">Games & Downloads</a></li>
                     <li><a href="#">Careers</a></li>
                 </ul>
             </div>
 
-            <!-- Support Section -->
             <div class="footer-section">
                 <h3>Support</h3>
                 <ul>
@@ -415,7 +409,6 @@
             </div>
         </div>
 
-        <!-- Social Media Links -->
         <div class="social-media">
             <a href="#"><i class="fa fa-facebook"></i></a>
             <a href="#"><i class="fa fa-twitter"></i></a>
@@ -425,23 +418,19 @@
             <a href="#"><i class="fa fa-discord"></i></a>
         </div>
         <p class="footer-bottom">© 2025 Pixulse Cloud. All Rights Reserved. | <a href="#">Legal & Privacy</a></p>
-
     </footer>
-    <div class="container-fluid"
-        style="font-family:'Press Start 2P', cursive;margin:5px;background-color:rgba(128, 128, 128, 0.138)">
+    
+    <div class="container-fluid" style="font-family:'Press Start 2P', cursive;margin:5px;background-color:rgba(128, 128, 128, 0.138)">
         <div class="row">
-            <div class="col-md-5">
-                <div class="navbar-header ">
-                    <a class="navbar-brand" href="#"><img src="{% static 'img/logo.png' %}" alt=""
-                            style="height: 40px;margin:-11px 0px 0px 0px"></a>
+            <div class="col-md-5 col-sm-12">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#"><img src="{% static 'img/logo.png' %}" alt="" style="height: 40px;margin:-11px 0px 0px 0px"></a>
                 </div>
                 <ul class="nav navbar-nav">
-                    <li class="active"><a href="#"
-                            style="font-size: 11px;letter-spacing:1px;margin: 0px 0px 0px -20px"><b>PIXULSE CLOUD
-                                BETA</b></a></li>
+                    <li class="active"><a href="#" style="font-size: 11px;letter-spacing:1px;margin: 0px 0px 0px -20px"><b>PIXULSE CLOUD BETA</b></a></li>
                 </ul>
             </div>
-            <div class="col-md-7">
+            <div class="col-md-7 col-sm-12">
                 <div class="footer-links">
                     <a href="#">ABOUT US</a>
                     <a href="#">PRIVACY POLICY</a>
