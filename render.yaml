@@ -2,5 +2,5 @@ services:
   - type: web
     name: pixulse-cloud
     runtime: python-3.12
-    buildCommand: "cd ak && pip install -r ../requirements.txt && python manage.py collectstatic --noinput"
+    buildCommand: "cd ak && pip install -r ../requirements.txt && python manage.py migrate --noinput && python manage.py collectstatic --noinput"
     startCommand: "gunicorn -w 2 -b 0.0.0.0:10000 ak.wsgi:application --chdir=ak"
