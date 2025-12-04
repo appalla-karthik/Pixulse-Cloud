@@ -109,20 +109,37 @@ h2 {
     font-size: 18px;
     color: white;
 }
-@media (max-width: 767px) {
+/* MOBILE — buttons hidden until hover */
+@media (max-width: 747px) {
+    
+    /* hide by default */
     .swiper-button-prev,
     .swiper-button-next {
-        width: 32px;
-        height: 32px;
-        opacity: 1; /* always visible on mobile */
-        top: 40%;   /* better centered */
+        opacity: 0 !important;
+        pointer-events: none;   /* disables accidental taps */
+        transition: opacity 0.3s ease;
+    }
+
+    /* show only when swiper is hovered/touched */
+    .swiper-container:hover .swiper-button-prev,
+    .swiper-container:hover .swiper-button-next {
+        opacity: 1 !important;
+        pointer-events: auto;
+    }
+
+    /* make them slightly smaller for mobile */
+    .swiper-button-prev,
+    .swiper-button-next {
+        width: 30px !important;
+        height: 30px !important;
     }
 
     .swiper-button-prev::after,
     .swiper-button-next::after {
-        font-size: 14px;
+        font-size: 14px !important;
     }
 }
+
 
 
 
