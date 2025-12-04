@@ -10,8 +10,11 @@ python3 -m pip install --upgrade pip setuptools wheel
 echo "Installing dependencies with pre-built wheels preference..."
 python3 -m pip install --prefer-binary -r requirements.txt
 
-echo "Running Django collectstatic..."
+echo "Running Django migrations..."
 cd ak
+python manage.py migrate --noinput
+
+echo "Running Django collectstatic..."
 python manage.py collectstatic --noinput 2>/dev/null || true
 
 echo "Build completed successfully!"
