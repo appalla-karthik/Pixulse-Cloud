@@ -14,7 +14,7 @@ echo "Running Django migrations..."
 cd ak
 python manage.py migrate --noinput
 
-echo "Running Django collectstatic..."
+echo "Collecting static files..."
 python manage.py collectstatic --noinput 2>/dev/null || true
 
 echo "Build completed successfully!"
