@@ -2,9 +2,5 @@ services:
   - type: web
     name: pixulse-cloud
     runtime: python-3.12
-    buildCommand: "./build.sh"
-    startCommand: "cd ak && gunicorn -w 4 -b 0.0.0.0:10000 ak.wsgi:application"
-    preDeployCommand: "cd ak && python manage.py migrate --noinput"
-    envVars:
-      - key: PYTHON_VERSION
-        value: "3.12"
+    buildCommand: "cd ak && pip install -r requirements.txt && cd .."
+    startCommand: "gunicorn -w 2 -b 0.0.0.0:10000 ak.wsgi:application --chdir=ak"
