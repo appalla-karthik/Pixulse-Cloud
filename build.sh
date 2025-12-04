@@ -15,6 +15,9 @@ cd ak
 python manage.py migrate --noinput
 
 echo "Collecting static files..."
-python manage.py collectstatic --noinput 2>/dev/null || true
+python manage.py collectstatic --noinput
+
+echo "Copying assets to staticfiles..."
+cp -r assets/* staticfiles/ 2>/dev/null || true
 
 echo "Build completed successfully!"
