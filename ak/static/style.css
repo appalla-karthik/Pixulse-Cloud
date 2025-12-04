@@ -27,8 +27,9 @@ h2 {
 .navbar-brand {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 10px;
 }
+
 
 .nav-button {
     transition: transform 0.2s ease-in-out, color 0.3s ease-in-out;
@@ -39,28 +40,32 @@ h2 {
 }
 
  
+/* ------------------------------ */
+/*        SWIPER BASE SETUP       */
+/* ------------------------------ */
+
 .swiper-container {
     width: 100%;
-    height: 100%;
+    height: auto;
     padding: 20px 0;
-    margin: 80px 0px 0px 0px;
+    margin-top: 40px;  /* default fallback */
     box-sizing: border-box;
-    overflow-x: hidden;
-    font-size: 10px;
+    overflow: hidden;
+    position: relative;
 }
 
+/* Slide */
 .swiper-slide {
     position: relative;
     width: 700px;
     border-radius: 15px;
-    overflow-x: hidden;
     cursor: pointer;
 }
 
 .swiper-slide img {
     width: 100%;
     height: 350px;
-    object-fit: fill;
+    object-fit: cover;
     border-radius: 15px;
 }
 
@@ -74,52 +79,92 @@ h2 {
     color: white;
 }
 
+/* Navigation arrows */
 .swiper-button-prev,
 .swiper-button-next {
-    position: absolute;
-    transform: translateY(-150%);
-    width: 50px;
-    height: 50px;
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 30%;
+    width: 45px;
+    height: 45px;
+    background: rgba(0, 0, 0, 0.55);
+    border-radius: 50%;
     display: flex;
-    transition: opacity 0.2s ease, visibility 0.3s ease;
+    align-items: center;
+    justify-content: center;
+    transition: 0.25s ease-in-out;
     opacity: 0;
-    margin-left: 0px;
 }
 
+/* Reveal on hover */
 .swiper-container:hover .swiper-button-prev,
 .swiper-container:hover .swiper-button-next {
     opacity: 1;
-    visibility: visible;
 }
 
 .swiper-button-prev:hover,
 .swiper-button-next:hover {
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.75);
 }
 
 .swiper-button-prev::after,
 .swiper-button-next::after {
-    font-size: 20px;
+    font-size: 18px;
     color: white;
 }
+@media (max-width: 767px) {
+    .swiper-button-prev,
+    .swiper-button-next {
+        width: 32px;
+        height: 32px;
+        opacity: 1; /* always visible on mobile */
+        top: 40%;   /* better centered */
+    }
 
-.swiper-pagination {
-    margin-bottom: 200px;
+    .swiper-button-prev::after,
+    .swiper-button-next::after {
+        font-size: 14px;
+    }
 }
+
+
+
 
 .swiper-pagination-bullet {
     background: gray;
-    height: 11px;
-    width: 11px;
+    height: 10px;
+    width: 10px;
     opacity: 0.5;
 }
 
 .swiper-pagination-bullet-active {
     background: white;
-    opacity: 1;
+    opacity: 1 !important;
+    transform: scale(1.2);
 }
+
+
+/* ================= LOGIN-BASED PAGINATION ================= */
+
+/* Remove any bottom pushing */
+.pagination-logged-in,
+.pagination-logged-out {
+    margin-bottom: 0 !important;
+}
+
+/* Let Swiper manage proper placement */
+.swiper-pagination {
+    bottom: 0px !important;  /* correct position */
+    position: absolute !important;
+    width: 100%;
+    z-index: 20;
+}
+
+@media (max-width: 767px) {
+    .swiper-pagination {
+        bottom: 20px !important; /* more breathing room */
+    }
+}
+
+/* On mobile (<767px), ignore the login spacing */
+
 
 .game-row {
     width: 100%;
@@ -833,11 +878,38 @@ h3 {
     font-weight: bold;
     
 }
+/* Desktop Default */
+.welcome-box {
+    font-size: 25px;
+    color: white;
+    padding: 20px 0 0px 40px;
+    list-style: none;
+    font-family: 'Press Start 2P', cursive;
+}
+
+.welcome-box .wave {
+    font-size: 26px;
+}
+/* Logged-in → small gap under welcome-box */
+.swiper-logged-in {
+    margin-top: 20px !important;
+}
+
+/* Logged-out → more gap because no welcome-box */
+.swiper-logged-out {
+    margin-top: 80px !important;
+}
+
+@media (max-width: 767px) {
+    .swiper-logged-in {
+        margin-top: 20px !important;
+    }
+    .swiper-logged-out {
+        margin-top: 70px !important;
+    }
+}
 
 
-/* ==================== RESPONSIVE STYLES ==================== */
-
-/* Tablet Styles (768px - 991px) */
 @media (max-width: 991px) {
     .game-row > div {
         width: 25% !important;
@@ -980,7 +1052,7 @@ h3 {
     }
     
     .swiper-container {
-        margin: 60px 0px 0px 0px;
+        margin: 30px 0px 0px 0px;
         padding: 15px 0;
     }
     
@@ -1000,20 +1072,7 @@ h3 {
         font-size: 10px;
     }
     
-    .swiper-button-prev,
-    .swiper-button-next {
-        width: 35px;
-        height: 35px;
-    }
     
-    .swiper-button-prev::after,
-    .swiper-button-next::after {
-        font-size: 14px;
-    }
-    
-    .swiper-pagination {
-        margin-bottom: 350px;
-    }
     
     .game-row {
         justify-content: center;

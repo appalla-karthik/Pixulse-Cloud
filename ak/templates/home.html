@@ -84,22 +84,18 @@
 
     {% if user.is_authenticated %}
         <div style="height: 80px;"></div>
-        <div style="height: 15px;font-size: 30px;color:white;list-style-type: none;padding:30px 0px 0px 30px;">
-            <li>Hello, {{user.first_name}} <span style="font-size: 38px;">👋</span></li>
-        </div>
+        <div class="welcome-box">
+        <li>Hello, {{ user.first_name }} <span class="wave">👋</span></li>
+    </div>
         <style> 
-            .swiper-button-prev,
-            .swiper-button-next{
-                margin: 80px 0px 0px 0px;
-            }
-            .swiper-pagination{
-               margin-bottom: 90px;
-            }
+           
         </style>
     {% endif %}
 
-    <div class="swiper-container">
-        <div class="swiper-wrapper">
+    <div class="swiper-container 
+     {% if user.is_authenticated %}swiper-logged-in{% else %}swiper-logged-out{% endif %}">
+
+       <div class="swiper-wrapper">
             <div class="swiper-slide">
                 <img src="{% static 'img/img1.jpg' %}" alt="Fallout 4">
                 <div class="game-info">
@@ -143,7 +139,9 @@
                 </div>
             </div>
         </div>
-        <div class="swiper-pagination"></div>
+          <div class="swiper-pagination 
+        {% if user.is_authenticated %}pagination-logged-in{% else %}pagination-logged-out{% endif %}">
+        </div>
         <div class="swiper-button-next"></div>
         <div class="swiper-button-prev"></div>
     </div>
