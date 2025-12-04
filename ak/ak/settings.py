@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-5*51g*i)+a06h!^jvmm%ds)c=4j&et9ja=x)dp0(kdhbm^b0^3
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['pixulse-cloud.onrender.com', 'localhost', '127.0.0.1', '.onrender.com']
 
 
 # Application definition
