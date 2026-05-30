@@ -118,57 +118,71 @@
                     style="width: 400px;height: 60px; letter-spacing: 2px;">
                      Start Streaming
                 </button>
+  <p id="hostAgentStatus" style="font-size: 11px; margin-top: 28px; color: #1c1917;">
+    Input agent: not connected
+  </p>
 
+  <script src="/config.js"></script>
   <script>
-    const ws = new WebSocket(`ws://localhost:8080`);
+    const query = new URLSearchParams(window.location.search);
+    const room = query.get('room') || query.get('game') || 'default';
+    const agentPort = query.get('agentPort') || '9090';
+    const agentToken = query.get('agentToken') || '';
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(`${wsProtocol}//${window.location.host}`);
+    const rtcConfig = window.PIXULSE_CONFIG?.rtcConfig || {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' }
+      ]
+    };
+
     let stream;
+    let hostAgent;
+    let hostAgentReady = false;
     const connections = {};
+    const pendingViewers = new Set();
+    const hostAgentStatus = document.getElementById('hostAgentStatus');
 
     async function setupStream() {
       try {
+        connectHostAgent();
         stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
 
         stream.getVideoTracks()[0].addEventListener('ended', () => {
           for (const id in connections) {
             connections[id].close();
           }
+          pendingViewers.clear();
         });
 
+        for (const id of pendingViewers) {
+          await createViewerConnection(id);
+        }
+        pendingViewers.clear();
       } catch (err) {
         alert('Permission denied or no screen selected.');
       }
     }
 
     ws.addEventListener('open', () => {
-      ws.send(JSON.stringify({ type: 'register', role: 'streamer' }));
+      ws.send(JSON.stringify({ type: 'register', role: 'streamer', room }));
     });
 
     ws.addEventListener('message', async (event) => {
       const msg = JSON.parse(event.data);
 
       if (msg.type === 'viewer-connected') {
-        const pc = new RTCPeerConnection();
-        stream.getTracks().forEach(track => pc.addTrack(track, stream));
+        if (!stream) {
+          pendingViewers.add(msg.id);
+          return;
+        }
 
-        pc.onicecandidate = e => {
-          if (e.candidate) {
-            ws.send(JSON.stringify({
-              type: 'ice-candidate',
-              data: e.candidate,
-              to: msg.id
-            }));
-          }
-        };
+        await createViewerConnection(msg.id);
+      }
 
-        connections[msg.id] = pc;
-
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-        ws.send(JSON.stringify({
-          type: 'offer',
-          data: offer,
-          to: msg.id
-        }));
+      if (msg.type === 'viewer-disconnected' && connections[msg.id]) {
+        connections[msg.id].close();
+        delete connections[msg.id];
       }
 
       if (msg.type === 'answer' && msg.from && connections[msg.from]) {
@@ -179,6 +193,93 @@
         await connections[msg.from].addIceCandidate(new RTCIceCandidate(msg.data));
       }
     });
+
+    async function createViewerConnection(viewerId) {
+      const pc = new RTCPeerConnection(rtcConfig);
+      const inputChannel = pc.createDataChannel('pixulse-input');
+
+      inputChannel.addEventListener('message', (event) => {
+        forwardInputToAgent(viewerId, event.data);
+      });
+
+      inputChannel.addEventListener('open', () => {
+        inputChannel.send(JSON.stringify({
+          type: 'host-ready',
+          room,
+          inputAgentConnected: hostAgentReady
+        }));
+      });
+
+      stream.getTracks().forEach(track => pc.addTrack(track, stream));
+
+      pc.onicecandidate = e => {
+        if (e.candidate) {
+          ws.send(JSON.stringify({
+            type: 'ice-candidate',
+            data: e.candidate,
+            to: viewerId
+          }));
+        }
+      };
+
+      pc.onconnectionstatechange = () => {
+        if (['failed', 'closed', 'disconnected'].includes(pc.connectionState)) {
+          delete connections[viewerId];
+        }
+      };
+
+      connections[viewerId] = pc;
+
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      ws.send(JSON.stringify({
+        type: 'offer',
+        data: offer,
+        to: viewerId
+      }));
+    }
+
+    function connectHostAgent() {
+      if (hostAgent && [WebSocket.OPEN, WebSocket.CONNECTING].includes(hostAgent.readyState)) return;
+
+      hostAgent = new WebSocket(`ws://127.0.0.1:${agentPort}`);
+
+      hostAgent.addEventListener('open', () => {
+        hostAgentReady = true;
+        hostAgentStatus.textContent = 'Input agent: connected';
+        hostAgentStatus.style.color = '#064e3b';
+        hostAgent.send(JSON.stringify({
+          type: 'auth',
+          token: agentToken
+        }));
+      });
+
+      hostAgent.addEventListener('close', () => {
+        hostAgentReady = false;
+        hostAgentStatus.textContent = 'Input agent: disconnected';
+        hostAgentStatus.style.color = '#7f1d1d';
+      });
+
+      hostAgent.addEventListener('error', () => {
+        hostAgentReady = false;
+        hostAgentStatus.textContent = 'Input agent: unavailable. Start npm run input-agent on the host PC.';
+        hostAgentStatus.style.color = '#7f1d1d';
+      });
+    }
+
+    function forwardInputToAgent(viewerId, rawPayload) {
+      if (!hostAgent || hostAgent.readyState !== WebSocket.OPEN) return;
+
+      try {
+        const input = JSON.parse(rawPayload);
+        hostAgent.send(JSON.stringify({
+          viewerId,
+          ...input
+        }));
+      } catch (err) {
+        console.warn('Invalid viewer input payload:', rawPayload);
+      }
+    }
   </script>
 </body>
 </html>

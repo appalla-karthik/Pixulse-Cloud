@@ -220,17 +220,32 @@
     <video id="remoteVideo"  autoplay playsinline controls></video>
   </div>
 
+  <script src="/config.js"></script>
   <!-- WebRTC Logic -->
   <script>
-    const ws = new WebSocket(`ws://localhost:8080`);
+    const query = new URLSearchParams(window.location.search);
+    const room = query.get('room') || query.get('game') || 'default';
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(`${wsProtocol}//${window.location.host}`);
+    const rtcConfig = window.PIXULSE_CONFIG?.rtcConfig || {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' }
+      ]
+    };
+
     let peerConnection;
+    let inputChannel;
     let id = null;
+    const pressedKeys = new Set();
+    const pressedButtons = new Set();
 
     const videoElement = document.getElementById('remoteVideo');
     const waitingWrapper = document.getElementById('waiting-wrapper');
 
+    videoElement.tabIndex = 0;
+
     ws.addEventListener('open', () => {
-      ws.send(JSON.stringify({ type: 'register', role: 'viewer' }));
+      ws.send(JSON.stringify({ type: 'register', role: 'viewer', room }));
     });
 
     ws.addEventListener('message', async (event) => {
@@ -240,28 +255,33 @@
         id = msg.id;
       }
 
+      if (msg.type === 'streamer-disconnected') {
+        resetToWaiting();
+      }
+
       if (msg.type === 'offer') {
-        peerConnection = new RTCPeerConnection();
+        peerConnection = new RTCPeerConnection(rtcConfig);
+
+        peerConnection.ondatachannel = (event) => {
+          inputChannel = event.channel;
+          inputChannel.addEventListener('open', () => {
+            sendInput({ type: 'client-ready' });
+          });
+        };
 
         peerConnection.ontrack = (event) => {
-          const videoElement = document.getElementById('remoteVideo');
           const stream = event.streams[0];
 
-          // Check if stream has video tracks
           if (stream.getVideoTracks().length === 0) {
-            // No actual video, show loading screen
-            document.getElementById('waiting-wrapper').style.display = 'flex';
-            videoElement.style.display = 'none';
+            resetToWaiting();
             return;
           }
 
-          // Valid stream, hide loader and show video
           videoElement.srcObject = stream;
-          document.getElementById('waiting-wrapper').style.display = 'none';
+          waitingWrapper.style.display = 'none';
           videoElement.style.display = 'block';
+          videoElement.focus();
         };
-
-
 
         peerConnection.onicecandidate = (e) => {
           if (e.candidate) {
@@ -274,12 +294,11 @@
           }
         };
 
-        // Handle ICE disconnection
         peerConnection.oniceconnectionstatechange = () => {
           const state = peerConnection.iceConnectionState;
           if (state === 'disconnected' || state === 'failed' || state === 'closed') {
-            waitingWrapper.style.display = 'flex';
-            videoElement.style.display = 'none';
+            releaseAllControls();
+            resetToWaiting();
           }
         };
 
@@ -299,12 +318,116 @@
         await peerConnection.addIceCandidate(new RTCIceCandidate(msg.data));
       }
     });
+
+    function sendInput(payload) {
+      if (!inputChannel || inputChannel.readyState !== 'open') return;
+      if (payload.type.startsWith('mouse-move') && inputChannel.bufferedAmount > 16384) return;
+      inputChannel.send(JSON.stringify({ ...payload, ts: performance.now() }));
+    }
+
+    function getVideoPoint(event) {
+      const rect = videoElement.getBoundingClientRect();
+      const x = Math.min(Math.max((event.clientX - rect.left) / rect.width, 0), 1);
+      const y = Math.min(Math.max((event.clientY - rect.top) / rect.height, 0), 1);
+      return { x, y };
+    }
+
+    function shouldCaptureKeyboard(event) {
+      return videoElement.style.display === 'block' &&
+        !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
+    }
+
+    function releaseAllControls() {
+      for (const code of pressedKeys) {
+        sendInput({ type: 'key', action: 'up', code });
+      }
+      pressedKeys.clear();
+
+      for (const button of pressedButtons) {
+        sendInput({ type: 'mouse-button', action: 'up', button });
+      }
+      pressedButtons.clear();
+    }
+
     function resetToWaiting() {
       videoElement.style.display = 'none';
       waitingWrapper.style.display = 'flex';
       videoElement.srcObject = null;
     }
 
+    videoElement.addEventListener('click', async () => {
+      videoElement.focus();
+      if (document.pointerLockElement !== videoElement) {
+        try {
+          await videoElement.requestPointerLock();
+        } catch (err) {
+          console.warn('Pointer lock was not granted:', err);
+        }
+      }
+    });
+
+    videoElement.addEventListener('mousemove', (event) => {
+      if (document.pointerLockElement === videoElement) {
+        sendInput({
+          type: 'mouse-move-relative',
+          dx: event.movementX,
+          dy: event.movementY
+        });
+        return;
+      }
+
+      const point = getVideoPoint(event);
+      sendInput({
+        type: 'mouse-move-absolute',
+        x: point.x,
+        y: point.y
+      });
+    });
+
+    videoElement.addEventListener('mousedown', (event) => {
+      event.preventDefault();
+      videoElement.focus();
+      pressedButtons.add(event.button);
+      sendInput({ type: 'mouse-button', action: 'down', button: event.button });
+    });
+
+    window.addEventListener('mouseup', (event) => {
+      if (!pressedButtons.has(event.button)) return;
+      pressedButtons.delete(event.button);
+      sendInput({ type: 'mouse-button', action: 'up', button: event.button });
+    });
+
+    videoElement.addEventListener('contextmenu', (event) => {
+      event.preventDefault();
+    });
+
+    videoElement.addEventListener('wheel', (event) => {
+      event.preventDefault();
+      sendInput({
+        type: 'mouse-wheel',
+        deltaX: event.deltaX,
+        deltaY: event.deltaY
+      });
+    }, { passive: false });
+
+    window.addEventListener('keydown', (event) => {
+      if (!shouldCaptureKeyboard(event) || event.repeat) return;
+      event.preventDefault();
+      pressedKeys.add(event.code);
+      sendInput({ type: 'key', action: 'down', code: event.code });
+    });
+
+    window.addEventListener('keyup', (event) => {
+      if (!pressedKeys.has(event.code)) return;
+      event.preventDefault();
+      pressedKeys.delete(event.code);
+      sendInput({ type: 'key', action: 'up', code: event.code });
+    });
+
+    window.addEventListener('blur', releaseAllControls);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) releaseAllControls();
+    });
   </script>
 
 </body>

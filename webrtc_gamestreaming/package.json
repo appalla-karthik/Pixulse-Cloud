@@ -4,7 +4,8 @@
   "main": "server/signaling_server.js",
   "type": "module",
   "scripts": {
-    "start": "node server/signaling_server.js"
+    "start": "node server/signaling_server.js",
+    "input-agent": "node server/input_agent.js"
   },
   "keywords": [],
   "author": "",
