@@ -147,7 +147,12 @@
     async function setupStream() {
       try {
         connectHostAgent();
-        stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+        stream = await navigator.mediaDevices.getDisplayMedia({
+          video: {
+            cursor: 'always'
+          },
+          audio: true
+        });
 
         stream.getVideoTracks()[0].addEventListener('ended', () => {
           for (const id in connections) {

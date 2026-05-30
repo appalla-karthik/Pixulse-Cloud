@@ -159,6 +159,20 @@
       position: relative;
       z-index: 1;
     }
+
+    #controlStatus {
+      display: none;
+      position: fixed;
+      left: 22px;
+      bottom: 22px;
+      z-index: 20;
+      padding: 10px 14px;
+      background: rgba(0, 0, 0, 0.82);
+      border: 1px solid rgba(255, 204, 0, 0.75);
+      color: #ffcc00;
+      font-size: 11px;
+      line-height: 1.4;
+    }
   </style>
 </head>
 
@@ -218,6 +232,7 @@
     </div>
 
     <video id="remoteVideo"  autoplay playsinline controls></video>
+    <div id="controlStatus">Input: waiting</div>
   </div>
 
   <script src="/config.js"></script>
@@ -242,6 +257,7 @@
 
     const videoElement = document.getElementById('remoteVideo');
     const waitingWrapper = document.getElementById('waiting-wrapper');
+    const controlStatus = document.getElementById('controlStatus');
 
     videoElement.tabIndex = 0;
 
@@ -265,8 +281,13 @@
 
         peerConnection.ondatachannel = (event) => {
           inputChannel = event.channel;
+          setControlStatus('Input: connecting');
           inputChannel.addEventListener('open', () => {
+            setControlStatus('Input: ready. Click stream to control');
             sendInput({ type: 'client-ready' });
+          });
+          inputChannel.addEventListener('close', () => {
+            setControlStatus('Input: disconnected');
           });
         };
 
@@ -281,6 +302,7 @@
           videoElement.srcObject = stream;
           waitingWrapper.style.display = 'none';
           videoElement.style.display = 'block';
+          controlStatus.style.display = 'block';
           videoElement.focus();
         };
 
@@ -346,6 +368,11 @@
       pressedButtons.clear();
     }
 
+    function setControlStatus(text) {
+      controlStatus.textContent = text;
+      controlStatus.style.display = 'block';
+    }
+
     function resetToWaiting() {
       videoElement.style.display = 'none';
       waitingWrapper.style.display = 'flex';
@@ -366,7 +393,10 @@
     document.addEventListener('pointerlockchange', () => {
       inputCaptured = document.pointerLockElement === videoElement;
       if (!inputCaptured) {
+        setControlStatus('Input: ready. Click stream to control');
         releaseAllControls();
+      } else {
+        setControlStatus('Input: controlling. Press Esc to release');
       }
     });
 
