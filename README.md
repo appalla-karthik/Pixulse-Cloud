@@ -390,36 +390,6 @@ The signaling service serves:
 
 ---
 
-## Environment Variables
-
-### Django service
-
-| Key | Required | Example | Purpose |
-| --- | --- | --- | --- |
-| `WEBRTC_PUBLIC_URL` | Yes for deployment | `https://pixulse-signaling.onrender.com` | Tells Django where player pages should open |
-
-### Signaling service
-
-| Key | Required | Example | Purpose |
-| --- | --- | --- | --- |
-| `PORT` | Render provides it | `10000` | Port for Node |
-| `STUN_URL` | No | `stun:stun.l.google.com:19302` | STUN server |
-| `TURN_URL` | Production recommended | `turn:your-turn-host:3478` | TURN relay |
-| `TURN_USERNAME` | If TURN is used | `user` | TURN auth username |
-| `TURN_CREDENTIAL` | If TURN is used | `password` | TURN auth password |
-| `ICE_SERVERS_JSON` | Optional | JSON array | Full custom ICE config |
-
-### Input agent
-
-| Key | Required | Default | Purpose |
-| --- | --- | --- | --- |
-| `INPUT_AGENT_PORT` | No | `9090` | Local WebSocket port |
-| `INPUT_AGENT_HOST` | No | `127.0.0.1` | Keep local only for safety |
-| `INPUT_AGENT_TOKEN` | No | empty | Optional local auth token |
-| `INPUT_AGENT_MOUSE_SENSITIVITY` | No | `1` | Mouse tuning |
-
----
-
 ## Mouse Calibration
 
 If the streamed pointer and click point feel slightly offset, tune the player URL:
