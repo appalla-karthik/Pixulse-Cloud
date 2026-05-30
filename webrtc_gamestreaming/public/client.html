@@ -158,6 +158,8 @@
 
       position: relative;
       z-index: 1;
+      cursor: crosshair;
+      user-select: none;
     }
 
     #controlStatus {
@@ -231,7 +233,7 @@
       <button class="pulse-button" onclick="location.reload()">Reconnect Stream</button>
     </div>
 
-    <video id="remoteVideo"  autoplay playsinline controls></video>
+    <video id="remoteVideo" autoplay playsinline muted></video>
     <div id="controlStatus">Input: waiting</div>
   </div>
 
@@ -252,6 +254,7 @@
     let inputChannel;
     let id = null;
     let inputCaptured = false;
+    let lastMouseMoveAt = 0;
     const pressedKeys = new Set();
     const pressedButtons = new Set();
 
@@ -260,6 +263,8 @@
     const controlStatus = document.getElementById('controlStatus');
 
     videoElement.tabIndex = 0;
+    videoElement.controls = false;
+    videoElement.disablePictureInPicture = true;
 
     ws.addEventListener('open', () => {
       ws.send(JSON.stringify({ type: 'register', role: 'viewer', room }));
@@ -348,6 +353,14 @@
       inputChannel.send(JSON.stringify({ ...payload, ts: performance.now() }));
     }
 
+    function getVideoPoint(event) {
+      const rect = videoElement.getBoundingClientRect();
+      return {
+        x: Math.min(Math.max((event.clientX - rect.left) / rect.width, 0), 1),
+        y: Math.min(Math.max((event.clientY - rect.top) / rect.height, 0), 1)
+      };
+    }
+
     function shouldCaptureKeyboard(event) {
       return videoElement.style.display === 'block' &&
         inputCaptured &&
@@ -379,40 +392,42 @@
       videoElement.srcObject = null;
     }
 
-    videoElement.addEventListener('click', async () => {
-      videoElement.focus();
-      if (document.pointerLockElement !== videoElement) {
-        try {
-          await videoElement.requestPointerLock();
-        } catch (err) {
-          console.warn('Pointer lock was not granted:', err);
-        }
+    function captureControls() {
+      if (!inputChannel || inputChannel.readyState !== 'open') {
+        setControlStatus('Input: not ready yet');
+        return false;
       }
-    });
 
-    document.addEventListener('pointerlockchange', () => {
-      inputCaptured = document.pointerLockElement === videoElement;
-      if (!inputCaptured) {
-        setControlStatus('Input: ready. Click stream to control');
-        releaseAllControls();
-      } else {
-        setControlStatus('Input: controlling. Press Esc to release');
-      }
-    });
+      videoElement.focus();
+      inputCaptured = true;
+      setControlStatus('Input: controlling. Press Esc to release');
+      return true;
+    }
 
     videoElement.addEventListener('mousemove', (event) => {
       if (!inputCaptured) return;
+      const now = performance.now();
+      if (now - lastMouseMoveAt < 8) return;
+      lastMouseMoveAt = now;
+
+      const point = getVideoPoint(event);
       sendInput({
-        type: 'mouse-move-relative',
-        dx: event.movementX,
-        dy: event.movementY
+        type: 'mouse-move-absolute',
+        x: point.x,
+        y: point.y
       });
     });
 
     videoElement.addEventListener('mousedown', (event) => {
       event.preventDefault();
-      videoElement.focus();
-      if (!inputCaptured) return;
+      if (!captureControls()) return;
+
+      const point = getVideoPoint(event);
+      sendInput({
+        type: 'mouse-move-absolute',
+        x: point.x,
+        y: point.y
+      });
       pressedButtons.add(event.button);
       sendInput({ type: 'mouse-button', action: 'down', button: event.button });
     });
@@ -427,6 +442,19 @@
       event.preventDefault();
     });
 
+    videoElement.addEventListener('click', (event) => {
+      event.preventDefault();
+      captureControls();
+    });
+
+    videoElement.addEventListener('dblclick', (event) => {
+      event.preventDefault();
+    });
+
+    videoElement.addEventListener('pause', () => {
+      videoElement.play().catch(() => {});
+    });
+
     videoElement.addEventListener('wheel', (event) => {
       event.preventDefault();
       if (!inputCaptured) return;
@@ -438,6 +466,13 @@
     }, { passive: false });
 
     window.addEventListener('keydown', (event) => {
+      if (event.code === 'Escape' && inputCaptured) {
+        event.preventDefault();
+        releaseAllControls();
+        setControlStatus('Input: ready. Click stream to control');
+        return;
+      }
+
       if (!shouldCaptureKeyboard(event) || event.repeat) return;
       event.preventDefault();
       pressedKeys.add(event.code);
