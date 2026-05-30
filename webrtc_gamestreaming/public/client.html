@@ -236,6 +236,7 @@
     let peerConnection;
     let inputChannel;
     let id = null;
+    let inputCaptured = false;
     const pressedKeys = new Set();
     const pressedButtons = new Set();
 
@@ -325,19 +326,15 @@
       inputChannel.send(JSON.stringify({ ...payload, ts: performance.now() }));
     }
 
-    function getVideoPoint(event) {
-      const rect = videoElement.getBoundingClientRect();
-      const x = Math.min(Math.max((event.clientX - rect.left) / rect.width, 0), 1);
-      const y = Math.min(Math.max((event.clientY - rect.top) / rect.height, 0), 1);
-      return { x, y };
-    }
-
     function shouldCaptureKeyboard(event) {
       return videoElement.style.display === 'block' &&
+        inputCaptured &&
         !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
     }
 
     function releaseAllControls() {
+      inputCaptured = false;
+
       for (const code of pressedKeys) {
         sendInput({ type: 'key', action: 'up', code });
       }
@@ -366,27 +363,26 @@
       }
     });
 
-    videoElement.addEventListener('mousemove', (event) => {
-      if (document.pointerLockElement === videoElement) {
-        sendInput({
-          type: 'mouse-move-relative',
-          dx: event.movementX,
-          dy: event.movementY
-        });
-        return;
+    document.addEventListener('pointerlockchange', () => {
+      inputCaptured = document.pointerLockElement === videoElement;
+      if (!inputCaptured) {
+        releaseAllControls();
       }
+    });
 
-      const point = getVideoPoint(event);
+    videoElement.addEventListener('mousemove', (event) => {
+      if (!inputCaptured) return;
       sendInput({
-        type: 'mouse-move-absolute',
-        x: point.x,
-        y: point.y
+        type: 'mouse-move-relative',
+        dx: event.movementX,
+        dy: event.movementY
       });
     });
 
     videoElement.addEventListener('mousedown', (event) => {
       event.preventDefault();
       videoElement.focus();
+      if (!inputCaptured) return;
       pressedButtons.add(event.button);
       sendInput({ type: 'mouse-button', action: 'down', button: event.button });
     });
@@ -403,6 +399,7 @@
 
     videoElement.addEventListener('wheel', (event) => {
       event.preventDefault();
+      if (!inputCaptured) return;
       sendInput({
         type: 'mouse-wheel',
         deltaX: event.deltaX,

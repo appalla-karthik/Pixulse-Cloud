@@ -139,6 +139,7 @@
     let stream;
     let hostAgent;
     let hostAgentReady = false;
+    let hostAgentRetryTimer;
     const connections = {};
     const pendingViewers = new Set();
     const hostAgentStatus = document.getElementById('hostAgentStatus');
@@ -167,6 +168,8 @@
     ws.addEventListener('open', () => {
       ws.send(JSON.stringify({ type: 'register', role: 'streamer', room }));
     });
+
+    connectHostAgent();
 
     ws.addEventListener('message', async (event) => {
       const msg = JSON.parse(event.data);
@@ -242,9 +245,12 @@
     function connectHostAgent() {
       if (hostAgent && [WebSocket.OPEN, WebSocket.CONNECTING].includes(hostAgent.readyState)) return;
 
+      hostAgentStatus.textContent = `Input agent: connecting on 127.0.0.1:${agentPort}`;
+      hostAgentStatus.style.color = '#1c1917';
       hostAgent = new WebSocket(`ws://127.0.0.1:${agentPort}`);
 
       hostAgent.addEventListener('open', () => {
+        clearTimeout(hostAgentRetryTimer);
         hostAgentReady = true;
         hostAgentStatus.textContent = 'Input agent: connected';
         hostAgentStatus.style.color = '#064e3b';
@@ -258,6 +264,7 @@
         hostAgentReady = false;
         hostAgentStatus.textContent = 'Input agent: disconnected';
         hostAgentStatus.style.color = '#7f1d1d';
+        scheduleHostAgentReconnect();
       });
 
       hostAgent.addEventListener('error', () => {
@@ -265,6 +272,11 @@
         hostAgentStatus.textContent = 'Input agent: unavailable. Start npm run input-agent on the host PC.';
         hostAgentStatus.style.color = '#7f1d1d';
       });
+    }
+
+    function scheduleHostAgentReconnect() {
+      clearTimeout(hostAgentRetryTimer);
+      hostAgentRetryTimer = setTimeout(connectHostAgent, 2500);
     }
 
     function forwardInputToAgent(viewerId, rawPayload) {
