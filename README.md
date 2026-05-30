@@ -13,8 +13,6 @@
   |
   <a href="#architecture">Architecture</a>
   |
-  <a href="#deploy-on-render">Deploy</a>
-  |
   <a href="#roadmap">Roadmap</a>
 </p>
 
@@ -340,53 +338,6 @@ https://your-signaling-service.onrender.com/client.html?room=game-1
 ```
 
 Click inside the stream to begin sending mouse and keyboard input.
-
----
-
-## Deploy On Render
-
-Pixulse Cloud uses two public services:
-
-```text
-Django Web Portal    -> Python web service
-WebRTC Signaling     -> Node web service
-```
-
-### Django service
-
-Recommended Render values:
-
-```text
-Root Directory: .
-Build Command: cd ak && pip install -r ../requirements.txt && python manage.py migrate --noinput && python manage.py collectstatic --noinput
-Start Command: gunicorn -w 2 -b 0.0.0.0:$PORT ak.wsgi:application --chdir=ak
-```
-
-Add this environment variable after the signaling service is live:
-
-```text
-WEBRTC_PUBLIC_URL=https://your-signaling-service.onrender.com
-```
-
-### Signaling service
-
-Create a separate Render Web Service:
-
-```text
-Name: pixulse-signaling
-Runtime: Node
-Root Directory: webrtc_gamestreaming
-Build Command: npm install
-Start Command: npm start
-```
-
-The signaling service serves:
-
-```text
-/client.html
-/streamer.html
-/config.js
-```
 
 ---
 
