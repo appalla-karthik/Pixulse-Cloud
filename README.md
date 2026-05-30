@@ -1,76 +1,194 @@
-# Pixulse Cloud
+<p align="center">
+  <img src="ak/assets/img/logo.png" alt="Pixulse Cloud" width="92">
+</p>
+
+<h1 align="center">Pixulse Cloud</h1>
 
 <p align="center">
-  <strong>Browser-based interactive game streaming with WebRTC, Django, and a host-side input agent.</strong>
+  <strong>Interactive browser game streaming powered by WebRTC, Django, Node.js, and a host-side input agent.</strong>
 </p>
 
 <p align="center">
-  <img alt="WebRTC" src="https://img.shields.io/badge/WebRTC-low_latency-00b894?style=for-the-badge">
-  <img alt="Django" src="https://img.shields.io/badge/Django-web_app-092e20?style=for-the-badge">
-  <img alt="Node.js" src="https://img.shields.io/badge/Node.js-signaling-339933?style=for-the-badge">
-  <img alt="Render" src="https://img.shields.io/badge/Render-ready-5f45ff?style=for-the-badge">
+  <a href="#quick-start">Quick Start</a>
+  |
+  <a href="#architecture">Architecture</a>
+  |
+  <a href="#deploy-on-render">Deploy</a>
+  |
+  <a href="#roadmap">Roadmap</a>
+</p>
+
+<p align="center">
+  <img alt="WebRTC" src="https://img.shields.io/badge/WebRTC-Low%20Latency-00b894?style=for-the-badge">
+  <img alt="Django" src="https://img.shields.io/badge/Django-Game%20Portal-092e20?style=for-the-badge">
+  <img alt="Node.js" src="https://img.shields.io/badge/Node.js-Signaling-339933?style=for-the-badge">
+  <img alt="Render" src="https://img.shields.io/badge/Render-Deployable-5f45ff?style=for-the-badge">
+</p>
+
+<p align="center">
+  <img alt="Status" src="https://img.shields.io/badge/status-interactive%20prototype-f59e0b?style=flat-square">
+  <img alt="Input" src="https://img.shields.io/badge/input-keyboard%20%2B%20mouse-2563eb?style=flat-square">
+  <img alt="Rooms" src="https://img.shields.io/badge/sessions-room%20based-7c3aed?style=flat-square">
+  <img alt="TURN" src="https://img.shields.io/badge/TURN-recommended%20for%20production-ef4444?style=flat-square">
 </p>
 
 ---
 
-## Overview
-
-Pixulse Cloud is a prototype cloud-gaming platform that lets a player open a browser, watch a live game stream, and send keyboard/mouse input back to the gaming PC.
-
-The project is split into two layers:
-
-| Layer | Purpose |
-| --- | --- |
-| Django web app | Game catalog, login/admin, game detail pages, and "Subscribe & Play" entry point |
-| WebRTC streaming app | Signaling server, streamer page, player page, and real-time input bridge |
-
-The player does not need gaming hardware. The game runs on the host/gaming PC, and the browser only receives video plus sends input.
+<table>
+  <tr>
+    <td width="55%">
+      <h2>Play From A Browser. Render On A Gaming PC.</h2>
+      <p>
+        Pixulse Cloud streams a game from a host machine to a browser and sends player input back in real time.
+        The player side stays lightweight. The host side does the heavy lifting.
+      </p>
+      <p>
+        This repository combines a Django game portal, a WebRTC signaling service, a browser streamer, a browser player,
+        and a local input agent for keyboard/mouse control.
+      </p>
+    </td>
+    <td width="45%">
+      <table>
+        <tr><td><strong>Video</strong></td><td>WebRTC media stream</td></tr>
+        <tr><td><strong>Input</strong></td><td>WebRTC data channel</td></tr>
+        <tr><td><strong>Catalog</strong></td><td>Django game pages</td></tr>
+        <tr><td><strong>Pairing</strong></td><td>Room URLs</td></tr>
+        <tr><td><strong>Host Control</strong></td><td>Local input agent</td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
 
 ---
 
-## How It Works
+## Product Snapshot
 
-```text
-Player Browser
-  opens client.html
-  sends keyboard/mouse input
-        |
-        | WebRTC video + data channel
-        v
-Render Signaling Server
-  matches streamer and player by room id
-        |
-        | WebRTC negotiation
-        v
-Gaming PC Browser
-  opens streamer.html
-  captures screen/audio
-        |
-        | local WebSocket
-        v
-Input Agent on Gaming PC
-  injects keyboard/mouse events into the game
+<table>
+  <tr>
+    <td align="center" width="25%">
+      <h3>Game Portal</h3>
+      <p>Django-powered catalog, game detail pages, admin panel, images, genres, and launch entry points.</p>
+    </td>
+    <td align="center" width="25%">
+      <h3>Live Stream</h3>
+      <p>Host PC shares screen/audio through WebRTC for low-latency browser playback.</p>
+    </td>
+    <td align="center" width="25%">
+      <h3>Remote Input</h3>
+      <p>Mouse, clicks, wheel, and keyboard are sent to the host through a data channel.</p>
+    </td>
+    <td align="center" width="25%">
+      <h3>Cloud Ready</h3>
+      <p>Node signaling service can run on Render while the input agent stays on the gaming machine.</p>
+    </td>
+  </tr>
+</table>
+
+---
+
+## Architecture
+
+```mermaid
+flowchart LR
+  subgraph Player["Player Laptop / Browser"]
+    C["client.html"]
+    UI["Visible stream + remote controls"]
+  end
+
+  subgraph Render["Render / Public Internet"]
+    S["Node WebRTC Signaling Server"]
+    CFG["/config.js ICE config"]
+  end
+
+  subgraph Host["Gaming PC / Host Machine"]
+    ST["streamer.html"]
+    IA["input_agent.js"]
+    G["Game / Desktop"]
+  end
+
+  C <-- "WebRTC video/audio" --> ST
+  C <-- "WebRTC input data channel" --> ST
+  C <-- "offer / answer / ICE" --> S
+  ST <-- "offer / answer / ICE" --> S
+  S --> CFG
+  ST -->|"ws://127.0.0.1:9090"| IA
+  IA -->|"keyboard + mouse injection"| G
+  ST -->|"screen/audio capture"| G
 ```
 
-The important rule:
+### Runtime Rule
 
 ```text
-streamer.html and input-agent must run on the same PC where the game is running.
-client.html can run from any other laptop/browser.
+client.html      -> opens on the player's laptop
+streamer.html    -> opens on the gaming PC
+input_agent.js   -> runs on the gaming PC
+signaling server -> runs publicly, for example on Render
+```
+
+---
+
+## Experience Flow
+
+```mermaid
+sequenceDiagram
+  participant P as Player Browser
+  participant S as Signaling Server
+  participant H as Host Streamer
+  participant A as Input Agent
+  participant G as Game
+
+  H->>S: Register streamer room=game-1
+  P->>S: Register player room=game-1
+  S->>H: Viewer connected
+  H->>P: WebRTC offer
+  P->>H: WebRTC answer
+  P-->>H: Keyboard/mouse input
+  H-->>A: Forward input locally
+  A-->>G: Inject keyboard/mouse
+  H-->>P: Stream video/audio
 ```
 
 ---
 
 ## Features
 
-- Low-latency WebRTC video/audio streaming.
-- Browser player page with remote mouse, clicks, wheel, and keyboard input.
-- Host-side input agent powered by `@nut-tree-fork/nut-js`.
-- Room-based sessions using URLs like `?room=game-1`.
-- Django admin for managing games and genres.
-- Render-ready Node signaling service.
-- Configurable STUN/TURN support for internet NAT traversal.
-- TeamViewer-style absolute mouse control for desktop/game interaction.
+| Category | Capability |
+| --- | --- |
+| Streaming | Real-time WebRTC screen/audio stream |
+| Input | Keyboard, mouse move, click, right click, wheel |
+| Pairing | Room-based URLs such as `?room=game-1` |
+| Web portal | Django home page, game pages, login/admin |
+| Admin | Game and genre management |
+| Deployment | Render-ready Django service and Node signaling service |
+| Networking | STUN by default, TURN-ready for production |
+| Calibration | URL-based pointer offset tuning |
+
+---
+
+## Tech Stack
+
+<table>
+  <tr>
+    <td><strong>Frontend</strong></td>
+    <td>HTML, CSS, JavaScript, WebRTC APIs</td>
+  </tr>
+  <tr>
+    <td><strong>Portal Backend</strong></td>
+    <td>Django, Gunicorn, WhiteNoise</td>
+  </tr>
+  <tr>
+    <td><strong>Signaling</strong></td>
+    <td>Node.js, Express, ws</td>
+  </tr>
+  <tr>
+    <td><strong>Host Input</strong></td>
+    <td>@nut-tree-fork/nut-js</td>
+  </tr>
+  <tr>
+    <td><strong>Deployment</strong></td>
+    <td>Render web services</td>
+  </tr>
+</table>
 
 ---
 
@@ -110,11 +228,9 @@ Pixulse-Cloud/
 
 ---
 
-## Local Setup
+## Quick Start
 
 ### 1. Install Django dependencies
-
-Run from the repo root:
 
 ```powershell
 cd "D:\New folder\Pixulse-Cloud"
@@ -131,7 +247,7 @@ Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 .\.venv\Scripts\Activate.ps1
 ```
 
-### 2. Run Django
+### 2. Start the Django portal
 
 ```powershell
 cd "D:\New folder\Pixulse-Cloud\ak"
@@ -157,15 +273,9 @@ Admin panel:
 http://127.0.0.1:8000/admin/
 ```
 
----
+### 3. Start the host input agent
 
-## Local Streaming Test
-
-Open two terminals.
-
-### Terminal 1: input agent
-
-This terminal must run on the gaming PC.
+Run this on the gaming PC:
 
 ```powershell
 cd "D:\New folder\Pixulse-Cloud\webrtc_gamestreaming"
@@ -179,7 +289,7 @@ Expected output:
 Pixulse input agent listening on ws://127.0.0.1:9090
 ```
 
-### Terminal 2: signaling server
+### 4. Start local signaling
 
 ```powershell
 cd "D:\New folder\Pixulse-Cloud\webrtc_gamestreaming"
@@ -192,30 +302,28 @@ Open streamer on the gaming PC:
 http://localhost:8080/streamer.html?room=game-1
 ```
 
-Open player on another browser/laptop:
+Open player on another browser or laptop:
 
 ```text
 http://localhost:8080/client.html?room=game-1
 ```
 
-The `room` value must match on both pages.
+The `room` value must match.
 
 ---
 
-## Deployed Test Flow
+## Deployed Demo Flow
 
-Once the signaling service is deployed:
+### Host / Gaming PC
 
-### Gaming PC
-
-Run the input agent locally:
+Run the local input agent:
 
 ```powershell
 cd "D:\New folder\Pixulse-Cloud\webrtc_gamestreaming"
 npm run input-agent
 ```
 
-Open streamer:
+Open:
 
 ```text
 https://your-signaling-service.onrender.com/streamer.html?room=game-1
@@ -231,19 +339,22 @@ Open:
 https://your-signaling-service.onrender.com/client.html?room=game-1
 ```
 
-Click inside the stream to begin controlling the host PC.
+Click inside the stream to begin sending mouse and keyboard input.
 
 ---
 
-## Deploying On Render
+## Deploy On Render
 
-This repository uses two deployable services.
+Pixulse Cloud uses two public services:
 
-### 1. Django web service
+```text
+Django Web Portal    -> Python web service
+WebRTC Signaling     -> Node web service
+```
 
-Use the existing Python service for the website.
+### Django service
 
-Recommended values:
+Recommended Render values:
 
 ```text
 Root Directory: .
@@ -257,9 +368,9 @@ Add this environment variable after the signaling service is live:
 WEBRTC_PUBLIC_URL=https://your-signaling-service.onrender.com
 ```
 
-### 2. Node signaling service
+### Signaling service
 
-Create a separate Render Web Service.
+Create a separate Render Web Service:
 
 ```text
 Name: pixulse-signaling
@@ -291,14 +402,12 @@ The signaling service serves:
 
 | Key | Required | Example | Purpose |
 | --- | --- | --- | --- |
-| `PORT` | Render provides it | `10000` | Port for the Node service |
-| `STUN_URL` | No | `stun:stun.l.google.com:19302` | STUN server for WebRTC discovery |
-| `TURN_URL` | Production recommended | `turn:your-turn-host:3478` | TURN relay fallback |
+| `PORT` | Render provides it | `10000` | Port for Node |
+| `STUN_URL` | No | `stun:stun.l.google.com:19302` | STUN server |
+| `TURN_URL` | Production recommended | `turn:your-turn-host:3478` | TURN relay |
 | `TURN_USERNAME` | If TURN is used | `user` | TURN auth username |
 | `TURN_CREDENTIAL` | If TURN is used | `password` | TURN auth password |
-| `ICE_SERVERS_JSON` | Optional | JSON array | Full custom ICE server config |
-
-If no TURN values are set, the app falls back to Google's public STUN server. That is fine for early testing, but production-grade internet streaming should use TURN.
+| `ICE_SERVERS_JSON` | Optional | JSON array | Full custom ICE config |
 
 ### Input agent
 
@@ -307,19 +416,19 @@ If no TURN values are set, the app falls back to Google's public STUN server. Th
 | `INPUT_AGENT_PORT` | No | `9090` | Local WebSocket port |
 | `INPUT_AGENT_HOST` | No | `127.0.0.1` | Keep local only for safety |
 | `INPUT_AGENT_TOKEN` | No | empty | Optional local auth token |
-| `INPUT_AGENT_MOUSE_SENSITIVITY` | No | `1` | Relative mouse tuning |
+| `INPUT_AGENT_MOUSE_SENSITIVITY` | No | `1` | Mouse tuning |
 
 ---
 
 ## Mouse Calibration
 
-If the remote pointer feels slightly offset, tune the player URL:
+If the streamed pointer and click point feel slightly offset, tune the player URL:
 
 ```text
 https://your-signaling-service.onrender.com/client.html?room=game-1&pointerOffsetY=-18
 ```
 
-Useful examples:
+Examples:
 
 ```text
 pointerOffsetY=-10   less upward shift
@@ -330,43 +439,62 @@ pointerOffsetX=-10   shift left
 
 ---
 
-## Current Limitations
+## Production Reality Check
 
-This is a working interactive streaming prototype, not a full commercial cloud-gaming stack yet.
+This is an interactive game-streaming prototype. It proves the core loop:
 
-Important gaps before production:
+```text
+stream video -> send input -> control host game
+```
 
-- A real TURN service is needed for reliable connections across strict networks.
-- The host PC still needs to run the input agent locally.
-- Game launching/session management is not automated yet.
-- No billing, queueing, GPU orchestration, or per-user cloud VM management yet.
-- Running AAA games in the cloud requires GPU instances such as AWS G-series, Azure NV-series, Paperspace, or similar infrastructure.
+Before commercial production, add:
+
+- A reliable TURN provider.
+- Authenticated rooms and session codes.
+- Packaged host agent installer.
+- Game launch automation.
+- Gamepad support.
+- Connection metrics and health checks.
+- Billing, queues, and session lifecycle management.
+- GPU cloud hosts for true no-host-PC cloud gaming.
 
 ---
 
 ## Roadmap
 
-- Package the host input agent as a Windows executable.
-- Add session codes like TeamViewer for easier pairing.
+```mermaid
+flowchart TB
+  A["Current Prototype"] --> B["Host Agent EXE"]
+  B --> C["Session Codes"]
+  C --> D["Authenticated Rooms"]
+  D --> E["Gamepad Support"]
+  E --> F["TURN Provider Integration"]
+  F --> G["GPU Cloud Host Support"]
+```
+
+Planned upgrades:
+
+- Package the input agent as a Windows executable.
+- Add TeamViewer-style session codes.
 - Add authenticated streamer/player rooms.
 - Add automatic game launch on the host machine.
-- Add gamepad support through the WebRTC data channel.
+- Add gamepad input through the WebRTC data channel.
 - Add TURN provider integration.
-- Add monitoring for latency, bitrate, packet loss, and connection state.
-- Add cloud GPU host support for true no-host-PC cloud gaming.
+- Add latency, bitrate, packet loss, and connection-state dashboards.
+- Add GPU VM orchestration for real cloud gaming sessions.
 
 ---
 
-## Quick Command Reference
+## Command Center
 
 ```powershell
-# Django
+# Django portal
 cd "D:\New folder\Pixulse-Cloud"
 .\.venv\Scripts\Activate.ps1
 cd ak
 python manage.py runserver
 
-# Input agent on gaming PC
+# Host input agent
 cd "D:\New folder\Pixulse-Cloud\webrtc_gamestreaming"
 npm run input-agent
 
@@ -377,6 +505,10 @@ npm start
 
 ---
 
-## License
+<p align="center">
+  <strong>Pixulse Cloud turns a gaming PC into a browser-playable streaming machine.</strong>
+</p>
 
-This project currently uses the license declared in `webrtc_gamestreaming/package.json`.
+<p align="center">
+  Built for experimentation, demos, and the next step toward full cloud gaming infrastructure.
+</p>
