@@ -20,7 +20,6 @@
   <img alt="WebRTC" src="https://img.shields.io/badge/WebRTC-Low%20Latency-00b894?style=for-the-badge">
   <img alt="Django" src="https://img.shields.io/badge/Django-Game%20Portal-092e20?style=for-the-badge">
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-Signaling-339933?style=for-the-badge">
-  <img alt="Render" src="https://img.shields.io/badge/Render-Deployable-5f45ff?style=for-the-badge">
 </p>
 
 <p align="center">
@@ -35,7 +34,7 @@
 <table>
   <tr>
     <td width="55%">
-      <h2>Play From A Browser. Render On A Gaming PC.</h2>
+      <h2>Play From A Browser. Run The Game On A Host PC.</h2>
       <p>
         Pixulse Cloud streams a game from a host machine to a browser and sends player input back in real time.
         The player side stays lightweight. The host side does the heavy lifting.
@@ -77,7 +76,7 @@
     </td>
     <td align="center" width="25%">
       <h3>Cloud Ready</h3>
-      <p>Node signaling service can run on Render while the input agent stays on the gaming machine.</p>
+      <p>The public signaling service pairs streamer and player sessions while the input agent stays on the gaming machine.</p>
     </td>
   </tr>
 </table>
@@ -93,7 +92,7 @@ flowchart LR
     UI["Visible stream + remote controls"]
   end
 
-  subgraph Render["Render / Public Internet"]
+  subgraph Cloud["Public Signaling Layer"]
     S["Node WebRTC Signaling Server"]
     CFG["/config.js ICE config"]
   end
@@ -120,7 +119,7 @@ flowchart LR
 client.html      -> opens on the player's laptop
 streamer.html    -> opens on the gaming PC
 input_agent.js   -> runs on the gaming PC
-signaling server -> runs publicly, for example on Render
+signaling server -> runs publicly
 ```
 
 ---
@@ -157,7 +156,7 @@ sequenceDiagram
 | Pairing | Room-based URLs such as `?room=game-1` |
 | Web portal | Django home page, game pages, login/admin |
 | Admin | Game and genre management |
-| Deployment | Render-ready Django service and Node signaling service |
+| Sessions | Public signaling layer for streamer/player pairing |
 | Networking | STUN by default, TURN-ready for production |
 | Calibration | URL-based pointer offset tuning |
 
@@ -183,8 +182,8 @@ sequenceDiagram
     <td>@nut-tree-fork/nut-js</td>
   </tr>
   <tr>
-    <td><strong>Deployment</strong></td>
-    <td>Render web services</td>
+    <td><strong>Session Layer</strong></td>
+    <td>Public Node.js signaling service</td>
   </tr>
 </table>
 
@@ -220,7 +219,6 @@ Pixulse-Cloud/
       style.css
     package.json
 
-  render.yaml
   requirements.txt
 ```
 
@@ -310,43 +308,12 @@ The `room` value must match.
 
 ---
 
-## Deployed Demo Flow
-
-### Host / Gaming PC
-
-Run the local input agent:
-
-```powershell
-cd "D:\New folder\Pixulse-Cloud\webrtc_gamestreaming"
-npm run input-agent
-```
-
-Open:
-
-```text
-https://your-signaling-service.onrender.com/streamer.html?room=game-1
-```
-
-Click `Start Streaming`, then share the entire screen or game window.
-
-### Player Laptop
-
-Open:
-
-```text
-https://your-signaling-service.onrender.com/client.html?room=game-1
-```
-
-Click inside the stream to begin sending mouse and keyboard input.
-
----
-
 ## Mouse Calibration
 
 If the streamed pointer and click point feel slightly offset, tune the player URL:
 
 ```text
-https://your-signaling-service.onrender.com/client.html?room=game-1&pointerOffsetY=-18
+https://your-signaling-url/client.html?room=game-1&pointerOffsetY=-18
 ```
 
 Examples:
