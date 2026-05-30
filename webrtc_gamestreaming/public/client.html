@@ -242,6 +242,8 @@
   <script>
     const query = new URLSearchParams(window.location.search);
     const room = query.get('room') || query.get('game') || 'default';
+    const pointerOffsetXPx = readNumberQuery('pointerOffsetX', 0);
+    const pointerOffsetYPx = readNumberQuery('pointerOffsetY', -18);
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const ws = new WebSocket(`${wsProtocol}//${window.location.host}`);
     const rtcConfig = window.PIXULSE_CONFIG?.rtcConfig || {
@@ -355,10 +357,31 @@
 
     function getVideoPoint(event) {
       const rect = videoElement.getBoundingClientRect();
+      const style = window.getComputedStyle(videoElement);
+      const leftInset = parseFloat(style.borderLeftWidth) + parseFloat(style.paddingLeft);
+      const rightInset = parseFloat(style.borderRightWidth) + parseFloat(style.paddingRight);
+      const topInset = parseFloat(style.borderTopWidth) + parseFloat(style.paddingTop);
+      const bottomInset = parseFloat(style.borderBottomWidth) + parseFloat(style.paddingBottom);
+      const contentLeft = rect.left + leftInset;
+      const contentTop = rect.top + topInset;
+      const contentWidth = rect.width - leftInset - rightInset;
+      const contentHeight = rect.height - topInset - bottomInset;
+      const adjustedX = event.clientX + pointerOffsetXPx;
+      const adjustedY = event.clientY + pointerOffsetYPx;
+
       return {
-        x: Math.min(Math.max((event.clientX - rect.left) / rect.width, 0), 1),
-        y: Math.min(Math.max((event.clientY - rect.top) / rect.height, 0), 1)
+        x: clamp((adjustedX - contentLeft) / contentWidth, 0, 1),
+        y: clamp((adjustedY - contentTop) / contentHeight, 0, 1)
       };
+    }
+
+    function readNumberQuery(name, fallback) {
+      const value = Number(query.get(name));
+      return Number.isFinite(value) ? value : fallback;
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
     }
 
     function shouldCaptureKeyboard(event) {
