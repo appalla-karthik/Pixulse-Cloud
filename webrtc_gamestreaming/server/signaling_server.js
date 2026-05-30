@@ -11,6 +11,30 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const server = http.createServer(app);
 
+app.get('/', (req, res) => {
+  res.type('html');
+  res.send(`<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pixulse Signaling</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.5; }
+      code { background: #f3f4f6; padding: 2px 6px; border-radius: 4px; }
+      a { color: #0f766e; }
+    </style>
+  </head>
+  <body>
+    <h1>Pixulse signaling is running</h1>
+    <p>This service hosts the WebRTC streamer and player pages.</p>
+    <p><a href="/client.html?room=game-1">Open player client</a></p>
+    <p><a href="/streamer.html?room=game-1">Open streamer panel</a></p>
+    <p>Use matching room ids, for example <code>?room=game-1</code>.</p>
+  </body>
+</html>`);
+});
+
 app.get('/config.js', (req, res) => {
   res.type('application/javascript');
   res.send(`window.PIXULSE_CONFIG = ${JSON.stringify({ rtcConfig: getRtcConfig() })};`);
