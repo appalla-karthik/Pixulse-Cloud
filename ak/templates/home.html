@@ -83,6 +83,29 @@
         </div>
     
         <div class="game-row">
+            <!-- Hardcoded Escape Road Game Card -->
+            <div style="width: 16%;float: left;">
+                <div class="product-card">
+                    <a href="{% url 'escape_road' %}">
+                        <img src="https://cdn.jsdelivr.net/gh/abisdbest/classroom.google.com@85146ac051b67a3c32ebdf898bb0144d818d580b/drive.google.com/escape%20road/loading.png" alt="Escape Road" class="product-image" style="object-fit: cover;">
+                        <div class="product-details">
+                            <span>Escape Road</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <!-- Hardcoded Drive Mad Game Card -->
+            <div style="width: 16%;float: left;">
+                <div class="product-card">
+                    <a href="{% url 'drive_mad' %}">
+                        <img src="{% static 'img/drive_mad_cover.png' %}" alt="Drive Mad" class="product-image" style="object-fit: cover;">
+                        <div class="product-details">
+                            <span>Drive Mad</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <!-- Dynamic Games from DB -->
             {% for game in games %}
             <div style="width: 16%;float: left;">
                 <div class="product-card">

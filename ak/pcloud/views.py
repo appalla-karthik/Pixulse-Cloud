@@ -9,6 +9,18 @@ def home(request):
     games = Game.objects.all() 
     return render(request, 'home.html', {'games': games})
 
+def escape_road(request):
+    return render(request, 'escape_road_landing.html')
+
+def escape_road_play(request):
+    return render(request, 'escape_road.html')
+
+def drive_mad(request):
+    return render(request, 'drive_mad_landing.html')
+
+def drive_mad_play(request):
+    return render(request, 'drive_mad.html')
+
 def game_detail(request, game_id):
     game = get_object_or_404(Game, id=game_id)  # Fetch game by ID
     return render(request, 'gamepage.html', {

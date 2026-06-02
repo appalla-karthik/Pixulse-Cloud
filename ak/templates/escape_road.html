@@ -1,0 +1,968 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Escape Road - 2D Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0d0d12;
+            overflow: hidden;
+            font-family: 'Outfit', sans-serif;
+            color: white;
+            user-select: none;
+        }
+
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .top-hud {
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .score-container {
+            background: rgba(20, 20, 30, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .score-label {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #8a8a9d;
+            margin-bottom: 5px;
+        }
+
+        .score-value {
+            font-size: 42px;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+            margin: 0;
+        }
+
+        .money-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #4ade80;
+            text-shadow: 0 0 15px rgba(74, 222, 128, 0.4);
+        }
+
+        .controls-hint {
+            background: rgba(20, 20, 30, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 15px 25px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .key {
+            background: #2a2a35;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-weight: 700;
+            box-shadow: 0 4px 0 #1a1a25;
+            color: #fff;
+        }
+
+        #game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 15, 0.85);
+            backdrop-filter: blur(15px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            pointer-events: auto;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 100;
+        }
+
+        #game-over.visible {
+            opacity: 1;
+        }
+
+        h1.busted {
+            font-size: 120px;
+            font-weight: 900;
+            color: #ff3b30;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: -2px;
+            text-shadow: 0 0 50px rgba(255, 59, 48, 0.6);
+            transform: scale(0.8);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #game-over.visible h1.busted {
+            transform: scale(1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 40px 0;
+            background: rgba(255,255,255,0.05);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .stat-box {
+            text-align: center;
+        }
+
+        .stat-name {
+            font-size: 14px;
+            color: #8a8a9d;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .stat-num {
+            font-size: 36px;
+            font-weight: 700;
+            color: #fff;
+            margin-top: 5px;
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, #007aff, #0056b3);
+            color: white;
+            border: none;
+            padding: 18px 50px;
+            font-size: 20px;
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0, 122, 255, 0.4);
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .restart-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 122, 255, 0.6);
+        }
+
+        .restart-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 5px 15px rgba(0, 122, 255, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="ui-layer">
+        <div class="top-hud">
+            <div class="score-container">
+                <div class="score-label">SCORE <span id="multiplier-badge" style="display:none; color:#ffd700; font-weight:bold;">(x2)</span></div>
+                <div class="score-value" id="score">0</div>
+                <div class="money-value" id="money">$0</div>
+                <div style="font-size:12px; color:#8a8a9d; margin-top:5px; font-weight:700;">HIGH: <span id="high-score-hud">0</span></div>
+            </div>
+            
+            <div id="powerup-indicators" style="display:flex; flex-direction:column; gap:5px; text-align:right;"></div>
+            
+            <div class="controls-hint">
+                <div style="color: #8a8a9d; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Steer</div>
+                <div class="key">A / ◄</div>
+                <div class="key">D / ►</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-over" style="display: none;">
+        <h1 class="busted">BUSTED</h1>
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-name">Final Score</div>
+                <div class="stat-num" id="final-score">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-name">Cash Collected</div>
+                <div class="stat-num" id="final-money" style="color: #4ade80;">$0</div>
+            </div>
+        </div>
+        <button class="restart-btn" onclick="initGame()">Play Again</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Resize Canvas
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Game State
+        let gameState = 'playing'; // playing, gameover
+        let score = 0;
+        let money = 0;
+        let bustedMeter = 0;
+        let frameCount = 0;
+        let lastTime = 0;
+        
+        let highScore = localStorage.getItem('escapeRoadHighScore') || 0;
+        let scoreMultiplier = 1;
+        let timeSlowed = false;
+        let shieldActive = false;
+        let activePowerups = {};
+        
+        // Input
+        const keys = {
+            ArrowLeft: false,
+            ArrowRight: false,
+            a: false,
+            d: false
+        };
+
+        window.addEventListener('keydown', (e) => {
+            if (keys.hasOwnProperty(e.key)) keys[e.key] = true;
+            if (e.code === 'Space' && gameState === 'gameover') initGame();
+        });
+        window.addEventListener('keyup', (e) => {
+            if (keys.hasOwnProperty(e.key)) keys[e.key] = false;
+        });
+
+        // Camera
+        const camera = { x: 0, y: 0, targetX: 0, targetY: 0, zoom: 1 };
+
+        // Entities
+        let player;
+        let police = [];
+        let obstacles = [];
+        let collectibles = [];
+        let particles = [];
+        let skidMarks = [];
+
+        // Constants
+        const WORLD_SIZE = 10000;
+        const TILE_SIZE = 400;
+
+        class Car {
+            constructor(x, y, isPlayer = false) {
+                this.x = x;
+                this.y = y;
+                this.width = 24;
+                this.height = 48;
+                this.angle = isPlayer ? -Math.PI / 2 : 0; // Point up
+                this.speed = 0;
+                this.maxSpeed = isPlayer ? 14 : 15; // Police are slightly faster
+                this.acceleration = 0.4;
+                this.friction = 0.96; // Drift friction
+                this.turnSpeed = 0.08;
+                this.isPlayer = isPlayer;
+                this.velocity = { x: 0, y: 0 };
+                
+                // Visuals
+                this.color = isPlayer ? '#ff3b30' : '#007aff';
+                this.lightFlash = 0;
+            }
+
+            update(dt) {
+                if (this.isPlayer) {
+                    // Auto-accelerate player
+                    this.speed += this.acceleration;
+                    
+                    // Steering
+                    let turning = false;
+                    if (keys.ArrowLeft || keys.a) { this.angle -= this.turnSpeed; turning = true; }
+                    if (keys.ArrowRight || keys.d) { this.angle += this.turnSpeed; turning = true; }
+                    
+                    // Limit speed
+                    if (this.speed > this.maxSpeed) this.speed = this.maxSpeed;
+
+                    // Calculate directional velocity based on angle
+                    const dirX = Math.cos(this.angle) * this.speed;
+                    const dirY = Math.sin(this.angle) * this.speed;
+
+                    // Interpolate velocity for drifting effect
+                    this.velocity.x = this.velocity.x * this.friction + dirX * (1 - this.friction);
+                    this.velocity.y = this.velocity.y * this.friction + dirY * (1 - this.friction);
+
+                    // Add skid marks if turning sharply
+                    if (turning && this.speed > 5 && frameCount % 2 === 0) {
+                        const backDist = this.height / 2;
+                        const backX = this.x - Math.cos(this.angle) * backDist;
+                        const backY = this.y - Math.sin(this.angle) * backDist;
+                        
+                        const perpX = Math.cos(this.angle + Math.PI/2) * (this.width/2 - 2);
+                        const perpY = Math.sin(this.angle + Math.PI/2) * (this.width/2 - 2);
+
+                        skidMarks.push({ x: backX + perpX, y: backY + perpY, alpha: 0.5, life: 100 });
+                        skidMarks.push({ x: backX - perpX, y: backY - perpY, alpha: 0.5, life: 100 });
+                    }
+                    
+                    // Add exhaust particles
+                    if (frameCount % 5 === 0) {
+                        const backX = this.x - Math.cos(this.angle) * (this.height / 2);
+                        const backY = this.y - Math.sin(this.angle) * (this.height / 2);
+                        particles.push(new Particle(backX, backY, '#fff', 3, 20));
+                    }
+
+                } else {
+                    // Police AI
+                    // Steer towards player
+                    const targetAngle = Math.atan2(player.y - this.y, player.x - this.x);
+                    
+                    // Smooth rotation towards target
+                    let diff = targetAngle - this.angle;
+                    // Normalize difference to -PI to PI
+                    while (diff < -Math.PI) diff += Math.PI * 2;
+                    while (diff > Math.PI) diff -= Math.PI * 2;
+                    
+                    const maxTurn = 0.05;
+                    if (diff > maxTurn) this.angle += maxTurn;
+                    else if (diff < -maxTurn) this.angle -= maxTurn;
+                    else this.angle = targetAngle;
+
+                    let currentMax = timeSlowed ? this.maxSpeed * 0.4 : this.maxSpeed;
+                    this.speed += this.acceleration;
+                    if (this.speed > currentMax) this.speed = currentMax;
+
+                    this.velocity.x = Math.cos(this.angle) * this.speed;
+                    this.velocity.y = Math.sin(this.angle) * this.speed;
+                    
+                    this.lightFlash++;
+                }
+
+                // Apply velocity
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+
+                // Restrict to world bounds
+                if (this.x < -WORLD_SIZE/2) this.x = -WORLD_SIZE/2;
+                if (this.x > WORLD_SIZE/2) this.x = WORLD_SIZE/2;
+                if (this.y < -WORLD_SIZE/2) this.y = -WORLD_SIZE/2;
+                if (this.y > WORLD_SIZE/2) this.y = WORLD_SIZE/2;
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+
+                // Shadow
+                ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                ctx.fillRect(-this.height/2 + 5, -this.width/2 + 5, this.height, this.width);
+
+                // Car body
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.roundRect(-this.height/2, -this.width/2, this.height, this.width, 5);
+                ctx.fill();
+
+                // Windshield
+                ctx.fillStyle = '#111';
+                ctx.fillRect(-this.height/4, -this.width/2 + 2, this.height/2, this.width - 4);
+
+                // Headlights
+                ctx.fillStyle = '#fffae6';
+                ctx.fillRect(this.height/2 - 4, -this.width/2 + 2, 4, 6);
+                ctx.fillRect(this.height/2 - 4, this.width/2 - 8, 4, 6);
+                
+                // Headlight beams
+                const gradient = ctx.createLinearGradient(this.height/2, 0, this.height/2 + 100, 0);
+                gradient.addColorStop(0, 'rgba(255, 255, 200, 0.3)');
+                gradient.addColorStop(1, 'rgba(255, 255, 200, 0)');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.moveTo(this.height/2, -this.width/2);
+                ctx.lineTo(this.height/2 + 150, -this.width/2 - 60);
+                ctx.lineTo(this.height/2 + 150, this.width/2 + 60);
+                ctx.lineTo(this.height/2, this.width/2);
+                ctx.fill();
+
+                // Police lights
+                if (!this.isPlayer) {
+                    ctx.fillStyle = (Math.floor(this.lightFlash / 10) % 2 === 0) ? '#ff3b30' : '#007aff';
+                    ctx.fillRect(-2, -this.width/2 + 2, 4, this.width - 4);
+                }
+
+                ctx.restore();
+            }
+            
+            getBounds() {
+                return {
+                    x: this.x - this.height/2,
+                    y: this.y - this.width/2,
+                    w: this.height,
+                    h: this.width
+                };
+            }
+        }
+
+        class Obstacle {
+            constructor(x, y, w, h) {
+                this.x = x;
+                this.y = y;
+                this.w = w;
+                this.h = h;
+                // Random neon accent
+                const colors = ['#00f3ff', '#ff003c', '#ffd700'];
+                this.accent = colors[Math.floor(Math.random() * colors.length)];
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                
+                // Shadow / base
+                ctx.fillStyle = '#0a0a0f';
+                ctx.fillRect(0, 0, this.w, this.h);
+                
+                // Top face (isometric-ish look)
+                ctx.fillStyle = '#1a1a24';
+                ctx.fillRect(-10, -10, this.w, this.h);
+                
+                // Border/Accent
+                ctx.strokeStyle = this.accent;
+                ctx.lineWidth = 2;
+                ctx.strokeRect(-10, -10, this.w, this.h);
+                
+                // Grid pattern on top
+                ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+                ctx.lineWidth = 1;
+                for(let i=0; i<this.w; i+=20) {
+                    ctx.beginPath(); ctx.moveTo(i-10, -10); ctx.lineTo(i-10, this.h-10); ctx.stroke();
+                }
+                for(let i=0; i<this.h; i+=20) {
+                    ctx.beginPath(); ctx.moveTo(-10, i-10); ctx.lineTo(this.w-10, i-10); ctx.stroke();
+                }
+                
+                ctx.restore();
+            }
+        }
+
+        class PowerUp {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.radius = 15;
+                this.angle = 0;
+                
+                const types = ['multiplier', 'shield', 'slowTime', 'speedBoost'];
+                this.type = types[Math.floor(Math.random() * types.length)];
+                
+                switch(this.type) {
+                    case 'multiplier': this.color = '#ffd700'; this.icon = 'x2'; break;
+                    case 'shield': this.color = '#00bfff'; this.icon = 'SH'; break;
+                    case 'slowTime': this.color = '#8a2be2'; this.icon = 'SL'; break;
+                    case 'speedBoost': this.color = '#32cd32'; this.icon = '>>'; break;
+                }
+            }
+            
+            update() { this.angle += 0.05; }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 20;
+                
+                ctx.rotate(this.angle);
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                ctx.rotate(-this.angle * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = 0.3;
+                ctx.fillRect(-8, -8, 16, 16);
+                ctx.globalAlpha = 1;
+                
+                ctx.rotate(this.angle); 
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 10px Outfit';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.icon, 0, 0);
+                
+                ctx.restore();
+            }
+        }
+
+        class Collectible {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.radius = 12;
+                this.angle = 0;
+            }
+            
+            update() {
+                this.angle += 0.05;
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                
+                // Glow
+                ctx.shadowColor = '#4ade80';
+                ctx.shadowBlur = 15;
+                
+                ctx.rotate(this.angle);
+                
+                ctx.fillStyle = '#4ade80';
+                ctx.beginPath();
+                ctx.rect(-8, -8, 16, 16);
+                ctx.fill();
+                
+                ctx.fillStyle = '#1a1a25';
+                ctx.font = '12px Outfit';
+                ctx.fontWeight = 'bold';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                // Rotate back for text
+                ctx.rotate(-this.angle);
+                ctx.fillText('$', 0, 0);
+
+                ctx.restore();
+            }
+        }
+
+        class Particle {
+            constructor(x, y, color, size, life) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.size = size;
+                this.life = life;
+                this.maxLife = life;
+                this.vx = (Math.random() - 0.5) * 4;
+                this.vy = (Math.random() - 0.5) * 4;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life--;
+            }
+
+            draw(ctx) {
+                ctx.globalAlpha = this.life / this.maxLife;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        function rectIntersect(r1, r2) {
+            return !(r2.x > r1.x + r1.w || 
+                     r2.x + r2.w < r1.x || 
+                     r2.y > r1.y + r1.h ||
+                     r2.y + r2.h < r1.y);
+        }
+
+        function createExplosion(x, y, color) {
+            for (let i = 0; i < 30; i++) {
+                particles.push(new Particle(x, y, color, Math.random() * 6 + 2, Math.random() * 30 + 10));
+            }
+        }
+
+        function generateWorld() {
+            obstacles = [];
+            collectibles = [];
+            
+            // Procedural generation of a city grid
+            const start = -WORLD_SIZE/2;
+            const end = WORLD_SIZE/2;
+            
+            for (let x = start; x < end; x += TILE_SIZE) {
+                for (let y = start; y < end; y += TILE_SIZE) {
+                    // 30% chance for an obstacle block
+                    if (Math.random() < 0.3) {
+                        // Don't spawn exactly where player starts (0,0)
+                        if (Math.abs(x) < 500 && Math.abs(y) < 500) continue;
+                        
+                        obstacles.push(new Obstacle(
+                            x + 50, 
+                            y + 50, 
+                            TILE_SIZE - 100, 
+                            TILE_SIZE - 100
+                        ));
+                    } 
+                    // 10% chance for money in empty blocks
+                    else if (Math.random() < 0.1) {
+                        collectibles.push(new Collectible(x + TILE_SIZE/2, y + TILE_SIZE/2));
+                    }
+                    else if (Math.random() < 0.05) {
+                        collectibles.push(new PowerUp(x + TILE_SIZE/2, y + TILE_SIZE/2));
+                    }
+                }
+            }
+        }
+
+        function initGame() {
+            player = new Car(0, 0, true);
+            police = [];
+            particles = [];
+            skidMarks = [];
+            score = 0;
+            money = 0;
+            bustedMeter = 0;
+            frameCount = 0;
+            gameState = 'playing';
+            
+            scoreMultiplier = 1;
+            timeSlowed = false;
+            shieldActive = false;
+            for (let id in activePowerups) clearTimeout(activePowerups[id]);
+            activePowerups = {};
+            
+            document.getElementById('game-over').style.display = 'none';
+            document.getElementById('game-over').classList.remove('visible');
+            
+            generateWorld();
+            updateHUD();
+            
+            // Initial police
+            spawnPolice();
+        }
+
+        function spawnPolice() {
+            // Spawn police outside of screen bounds but near player
+            const angle = Math.random() * Math.PI * 2;
+            const dist = Math.max(window.innerWidth, window.innerHeight) + 200;
+            const px = player.x + Math.cos(angle) * dist;
+            const py = player.y + Math.sin(angle) * dist;
+            
+            police.push(new Car(px, py, false));
+        }
+
+        function updateHUD() {
+            document.getElementById('score').innerText = Math.floor(score);
+            document.getElementById('money').innerText = '$' + money;
+            document.getElementById('high-score-hud').innerText = Math.floor(highScore);
+            document.getElementById('multiplier-badge').style.display = scoreMultiplier > 1 ? 'inline' : 'none';
+            
+            let powerupHTML = '';
+            if (shieldActive) powerupHTML += '<div style="color:#00bfff; font-weight:bold; background:rgba(0,0,0,0.5); padding:5px 10px; border-radius:5px; border:1px solid #00bfff;">SHIELD</div>';
+            if (timeSlowed) powerupHTML += '<div style="color:#8a2be2; font-weight:bold; background:rgba(0,0,0,0.5); padding:5px 10px; border-radius:5px; border:1px solid #8a2be2;">TIME SLOW</div>';
+            if (player && player.maxSpeed > 15) powerupHTML += '<div style="color:#32cd32; font-weight:bold; background:rgba(0,0,0,0.5); padding:5px 10px; border-radius:5px; border:1px solid #32cd32;">SPEED BOOST</div>';
+            document.getElementById('powerup-indicators').innerHTML = powerupHTML;
+        }
+
+        function gameOver() {
+            gameState = 'gameover';
+            createExplosion(player.x, player.y, '#ff3b30');
+            
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('escapeRoadHighScore', highScore);
+            }
+            
+            document.getElementById('final-score').innerText = Math.floor(score);
+            document.getElementById('final-money').innerText = '$' + money;
+            
+            const goScreen = document.getElementById('game-over');
+            goScreen.style.display = 'flex';
+            setTimeout(() => {
+                goScreen.classList.add('visible');
+            }, 50);
+        }
+
+        function activatePowerUp(type) {
+            const duration = 10000;
+            if (activePowerups[type]) clearTimeout(activePowerups[type]);
+            
+            switch(type) {
+                case 'multiplier':
+                    scoreMultiplier = 2;
+                    activePowerups[type] = setTimeout(() => { scoreMultiplier = 1; delete activePowerups[type]; }, duration);
+                    break;
+                case 'shield':
+                    shieldActive = true;
+                    activePowerups[type] = setTimeout(() => { shieldActive = false; delete activePowerups[type]; }, duration);
+                    break;
+                case 'slowTime':
+                    timeSlowed = true;
+                    activePowerups[type] = setTimeout(() => { timeSlowed = false; delete activePowerups[type]; }, duration);
+                    break;
+                case 'speedBoost':
+                    player.maxSpeed = 22;
+                    activePowerups[type] = setTimeout(() => { player.maxSpeed = 14; delete activePowerups[type]; }, duration);
+                    break;
+            }
+        }
+
+        function update(dt) {
+            if (gameState !== 'playing') {
+                particles.forEach(p => p.update());
+                particles = particles.filter(p => p.life > 0);
+                return;
+            }
+
+            frameCount++;
+            
+            // Score increases over time
+            score += (dt * 10) * scoreMultiplier;
+            
+            // Increase difficulty (spawn police over time)
+            if (frameCount % 300 === 0) { // Every ~5 seconds
+                spawnPolice();
+            }
+
+            player.update(dt);
+            const playerBounds = player.getBounds();
+            let isPinned = false;
+
+            // Check Player vs Obstacles
+            for (let obs of obstacles) {
+                if (rectIntersect(playerBounds, obs)) {
+                    // Bounce off buildings
+                    player.speed *= -0.5;
+                    player.x -= player.velocity.x * 2;
+                    player.y -= player.velocity.y * 2;
+                    player.x -= Math.cos(player.angle) * 10;
+                    player.y -= Math.sin(player.angle) * 10;
+                }
+            }
+
+            // Check Collectibles
+            for (let i = collectibles.length - 1; i >= 0; i--) {
+                const c = collectibles[i];
+                c.update();
+                const dist = Math.hypot(player.x - c.x, player.y - c.y);
+                if (dist < c.radius + 20) {
+                    collectibles.splice(i, 1);
+                    if (c instanceof PowerUp) {
+                        createExplosion(c.x, c.y, c.color);
+                        activatePowerUp(c.type);
+                    } else {
+                        money += 100;
+                        score += 500 * scoreMultiplier;
+                        createExplosion(c.x, c.y, '#4ade80');
+                    }
+                }
+            }
+
+            // Update Police
+            for (let i = police.length - 1; i >= 0; i--) {
+                const p = police[i];
+                p.update(dt);
+                const pBounds = p.getBounds();
+
+                // Police vs Obstacles (destroy police if they hit building)
+                let crashed = false;
+                for (let obs of obstacles) {
+                    if (rectIntersect(pBounds, obs)) {
+                        createExplosion(p.x, p.y, '#007aff');
+                        police.splice(i, 1);
+                        score += 200; // Bonus for making police crash
+                        crashed = true;
+                        break;
+                    }
+                }
+                
+                if (crashed) continue;
+
+                // Police vs Player
+                const distToPlayer = Math.hypot(player.x - p.x, player.y - p.y);
+                if (distToPlayer < 40) {
+                    if (shieldActive) {
+                        createExplosion(p.x, p.y, '#00bfff');
+                        police.splice(i, 1);
+                        score += 500 * scoreMultiplier;
+                        continue;
+                    }
+                    // Ramming effect
+                    const angle = Math.atan2(player.y - p.y, player.x - p.x);
+                    player.x += Math.cos(angle) * 3;
+                    player.y += Math.sin(angle) * 3;
+                    player.speed *= 0.8;
+                    
+                    if (player.speed < 3) {
+                        isPinned = true;
+                    }
+                }
+            }
+
+            if (isPinned) {
+                bustedMeter += dt * 50;
+                if (bustedMeter >= 100) {
+                    gameOver();
+                    return;
+                }
+            } else {
+                bustedMeter -= dt * 100;
+                if (bustedMeter < 0) bustedMeter = 0;
+            }
+
+            // Update Skids and Particles
+            skidMarks.forEach(s => s.life--);
+            skidMarks = skidMarks.filter(s => s.life > 0);
+            
+            particles.forEach(p => p.update());
+            particles = particles.filter(p => p.life > 0);
+
+            // Update Camera (Smooth Follow)
+            camera.targetX = player.x - canvas.width / 2;
+            camera.targetY = player.y - canvas.height / 2;
+            
+            camera.x += (camera.targetX - camera.x) * 0.1;
+            camera.y += (camera.targetY - camera.y) * 0.1;
+
+            if (frameCount % 10 === 0) updateHUD();
+        }
+
+        function drawGrid(ctx) {
+            ctx.strokeStyle = '#151520';
+            ctx.lineWidth = 2;
+            
+            const startX = Math.floor(camera.x / TILE_SIZE) * TILE_SIZE;
+            const startY = Math.floor(camera.y / TILE_SIZE) * TILE_SIZE;
+            
+            for (let x = startX; x < camera.x + canvas.width + TILE_SIZE; x += TILE_SIZE) {
+                ctx.beginPath();
+                ctx.moveTo(x, camera.y);
+                ctx.lineTo(x, camera.y + canvas.height);
+                ctx.stroke();
+            }
+            
+            for (let y = startY; y < camera.y + canvas.height + TILE_SIZE; y += TILE_SIZE) {
+                ctx.beginPath();
+                ctx.moveTo(camera.x, y);
+                ctx.lineTo(camera.x + canvas.width, y);
+                ctx.stroke();
+            }
+        }
+
+        function draw() {
+            // Clear background
+            ctx.fillStyle = '#0d0d12';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.save();
+            ctx.translate(-camera.x, -camera.y);
+
+            // Draw Grid (Roads)
+            drawGrid(ctx);
+
+            // Draw Skid marks
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            skidMarks.forEach(s => {
+                ctx.globalAlpha = s.life / 100;
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, 3, 0, Math.PI*2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+
+            // Draw Collectibles
+            collectibles.forEach(c => {
+                // Frustum culling
+                if (c.x > camera.x - 50 && c.x < camera.x + canvas.width + 50 &&
+                    c.y > camera.y - 50 && c.y < camera.y + canvas.height + 50) {
+                    c.draw(ctx);
+                }
+            });
+
+            // Draw Obstacles (Buildings)
+            obstacles.forEach(obs => {
+                if (obs.x + obs.w > camera.x && obs.x < camera.x + canvas.width &&
+                    obs.y + obs.h > camera.y && obs.y < camera.y + canvas.height) {
+                    obs.draw(ctx);
+                }
+            });
+
+            // Draw Police
+            police.forEach(p => p.draw(ctx));
+
+            // Draw Player
+            if (gameState === 'playing') {
+                player.draw(ctx);
+                
+                if (shieldActive) {
+                    ctx.strokeStyle = 'rgba(0, 191, 255, 0.8)';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.arc(player.x, player.y, 35, 0, Math.PI*2);
+                    ctx.stroke();
+                }
+                
+                if (bustedMeter > 0) {
+                    ctx.fillStyle = 'rgba(0,0,0,0.8)';
+                    ctx.fillRect(player.x - 30, player.y - 40, 60, 10);
+                    ctx.fillStyle = '#ff3b30';
+                    ctx.fillRect(player.x - 28, player.y - 38, 56 * (bustedMeter / 100), 6);
+                    ctx.fillStyle = 'white';
+                    ctx.font = 'bold 12px Outfit';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('BUSTED', player.x, player.y - 45);
+                }
+            }
+
+            // Draw Particles
+            particles.forEach(p => p.draw(ctx));
+
+            ctx.restore();
+        }
+
+        function loop(timestamp) {
+            const dt = Math.min((timestamp - lastTime) / 1000, 0.1);
+            lastTime = timestamp;
+
+            update(dt);
+            draw();
+
+            requestAnimationFrame(loop);
+        }
+
+        // Start
+        initGame();
+        requestAnimationFrame(loop);
+
+    </script>
+</body>
+</html>
