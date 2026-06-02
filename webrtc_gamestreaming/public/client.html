@@ -1,520 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
-  <title>Pixulse Cloud Viewer</title>
+  <title>Pixulse Cloud Gaming</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Stylesheets -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Press Start 2P', cursive;
-      background-color: #0f0f0f;
-      background-image: url("https://www.transparenttextures.com/patterns/stardust.png");
-      background-repeat: repeat;
-      background-size: auto;
-      color: white;
-    }
-    nav.navbar {
-      height: 80px;
-      background-color: #111;
-      border: none;
-      border-radius: 0;
-      padding: 20px 0px 0px 880px;
-      z-index: 9999;
-    }
-
-    .navbar-brand img {
-      height: 50px;
-      margin: -17px 0px 0px 0px;
-    }
-
-    .brandname a {
-      font-size: 19px;
-      letter-spacing: 2px;
-      color: white !important;
-    }
-
-    .viewer-container {
-
-      height: 100vh;
-      padding-top: 70px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      position: relative;
-    }
-
-    #waiting-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      position: absolute;
-      top: 70px;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 2;
-    }
-
-    .cloud-animation svg {
-      width: 200px;
-      height: 120px;
-      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
-    }
-
-    .cloud-animation {
-      animation: pulseCloud 3s ease-in-out infinite;
-    }
-
-    @keyframes pulseCloud {
-
-      0%,
-      100% {
-        transform: scale(1);
-        filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.2));
-      }
-
-      50% {
-        transform: scale(1.05);
-        filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.6));
-      }
-    }
-
-    #status {
-      font-size: 26px;
-      color: #ccc;
-      margin-top: 20px;
-      font-family: 'Press Start 2P', cursive;
-      letter-spacing: 1px;
-    }
-
-    .pulse-button {
-
-      padding: 18px 40px;
-      font-size: 18px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: white;
-      background: black;
-      border: 2px solid #ffcc00;
-      cursor: pointer;
-      overflow: hidden;
-      transition: 0.3s;
-      border-radius: 30px;
-      margin: 30px 0px 0px 0px;
-    }
-
-    .pulse-button:hover {
-      background-color: rgba(255, 204, 0, 0.288);
-      animation: pulse-effect 1.2s infinite alternate;
-    }
-
-    @keyframes pulse-effect {
-      0% {
-        transform: scale(1);
-        box-shadow: 0 0 6px rgba(255, 204, 0, 0.8);
-      }
-
-      100% {
-        transform: scale(1.05);
-        box-shadow: 0 0 15px rgba(255, 204, 0, 1);
-      }
-    }
-
-
-
-    #remoteVideo {
-      width: 82%;
-      max-height: 80vh;
-      margin-top: 40px;
-      background-color: black;
-      display: none;
-
-
-      border: 6px solid transparent;
-      border-radius: 18px;
-      padding: 4px;
-      background-clip: padding-box;
-
-
-      box-shadow:
-        0 0 0 2px #0f0f0f,
-
-        0 0 0 6px rgba(0, 255, 153, 0.25),
-
-        0 0 20px rgba(0, 255, 153, 0.3),
-        inset 0 0 10px rgba(0, 255, 153, 0.4);
-
-
-      position: relative;
-      z-index: 1;
-      cursor: crosshair;
-      user-select: none;
-    }
-
-    #controlStatus {
-      display: none;
-      position: fixed;
-      left: 22px;
-      bottom: 22px;
-      z-index: 20;
-      padding: 10px 14px;
-      background: rgba(0, 0, 0, 0.82);
-      border: 1px solid rgba(255, 204, 0, 0.75);
-      color: #ffcc00;
-      font-size: 11px;
-      line-height: 1.4;
-    }
-  </style>
+  <meta name="description" content="Pixulse Cloud - Play any game, anywhere. Industry-leading cloud gaming streaming.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="client-styles.css">
+  <link rel="stylesheet" href="cursor-styles.css">
 </head>
-
 <body>
+  <!-- Custom Cursor -->
+  <div id="customCursor" class="custom-cursor hidden">
+    <div class="cursor-dot"></div>
+    <div class="cursor-ring"></div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer"></div>
 
   <!-- Navbar -->
-  <nav class="navbar navbar-inverse navbar-fixed-top">
-    <div class="container-fluid">
-      <div class="navbar-header">
-        <a class="navbar-brand" href="#"><img src="logo.png" alt="Pixulse Logo"></a>
-      </div>
-      <ul class="nav navbar-nav">
-        <li class="brandname"><a href="#"><b>PIXULSE CLOUD BETA</b></a></li>
-      </ul>
-
+  <nav id="navbar">
+    <div class="nav-left">
+      <img src="logo.png" alt="Pixulse" class="nav-logo">
+      <span class="nav-brand">PIXULSE <span class="nav-beta">CLOUD</span></span>
+    </div>
+    <div class="nav-right">
+      <div id="sessionTimer" class="nav-pill hidden"><i class="fa-regular fa-clock"></i> <span id="sessionTime">00:00:00</span></div>
+      <div id="qualityBadge" class="nav-pill quality-unknown" title="Connection Quality"><i class="fa-solid fa-signal"></i> <span id="qualityText">--</span></div>
     </div>
   </nav>
 
-  <div class="viewer-container">
-    <!-- Waiting Wrapper -->
-    <div id="waiting-wrapper">
+  <!-- Waiting Screen -->
+  <div id="waitingScreen" class="waiting-screen">
+    <div class="waiting-content">
       <div class="cloud-animation">
         <svg viewBox="-5 -5 74 50">
           <defs>
             <linearGradient id="cloud-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stop-color="#ff0000">
-                <animate attributeName="stop-color" values="#ff0000;#00ff00;#0000ff;#ff0000" dur="6s"
-                  repeatCount="indefinite" />
+                <animate attributeName="stop-color" values="#ff0000;#00ff00;#0000ff;#ff0000" dur="6s" repeatCount="indefinite" />
               </stop>
               <stop offset="100%" stop-color="#0000ff">
-                <animate attributeName="stop-color" values="#0000ff;#ff0000;#00ff00;#0000ff" dur="6s"
-                  repeatCount="indefinite" />
+                <animate attributeName="stop-color" values="#0000ff;#ff0000;#00ff00;#0000ff" dur="6s" repeatCount="indefinite" />
               </stop>
             </linearGradient>
           </defs>
-
-          <!-- Dim Outline -->
-          <path d="M20,30 C12,30 6,24 6,17 C6,11 11,6 17,6 C18,2 22,0 26,0
-                   C30,0 34,3 35,6 C38,6 40,6 43,8 C46,8 52,10 52,17
-                   C52,24 46,30 38,30 Z" stroke="#444" stroke-width="2.5" fill="none" />
-
-          <!-- RGB Animated Outline -->
-          <path d="M20,30 C12,30 6,24 6,17 C6,11 11,6 17,6 C18,2 22,0 26,0
-                   C30,0 34,3 35,6 C38,6 40,6 43,8 C46,8 52,10 52,17
-                   C52,24 46,30 38,30 Z" stroke="url(#cloud-gradient)" stroke-width="5" fill="none"
-            stroke-linecap="round" stroke-dasharray="18 290" stroke-dashoffset="0">
+          <path d="M20,30 C12,30 6,24 6,17 C6,11 11,6 17,6 C18,2 22,0 26,0 C30,0 34,3 35,6 C38,6 40,6 43,8 C46,8 52,10 52,17 C52,24 46,30 38,30 Z" stroke="#444" stroke-width="2.5" fill="none" />
+          <path d="M20,30 C12,30 6,24 6,17 C6,11 11,6 17,6 C18,2 22,0 26,0 C30,0 34,3 35,6 C38,6 40,6 43,8 C46,8 52,10 52,17 C52,24 46,30 38,30 Z" stroke="url(#cloud-gradient)" stroke-width="5" fill="none" stroke-linecap="round" stroke-dasharray="18 290" stroke-dashoffset="0">
             <animate attributeName="stroke-dashoffset" values="0;-123" dur="1s" repeatCount="indefinite" />
           </path>
         </svg>
       </div>
 
-      <div id="status" style=" padding:0px 0px 0px 0px;">
-        <i class="fa fa-hourglass-1" style="font-size:35px;"></i>
+      <div id="status" class="pixel-status" style="margin-top: 30px;">
+        <i class="fa fa-hourglass-1" style="font-size:25px; margin-right: 15px;"></i>
         Waiting for stream...
       </div>
-      <button class="pulse-button" onclick="location.reload()">Reconnect Stream</button>
-    </div>
+      
+      <button class="pulse-button" onclick="location.reload()" style="margin-top: 30px; margin-bottom: 30px;">Reconnect Stream</button>
 
+      <div class="connection-steps">
+        <div class="step active" id="step-server"><div class="step-icon"><i class="fa-solid fa-server"></i></div><span>SERVER</span></div>
+        <div class="step" id="step-streamer"><div class="step-icon"><i class="fa-solid fa-display"></i></div><span>STREAMER</span></div>
+        <div class="step" id="step-peer"><div class="step-icon"><i class="fa-solid fa-link"></i></div><span>PEER(P2P)</span></div>
+        <div class="step" id="step-stream"><div class="step-icon"><i class="fa-solid fa-play"></i></div><span>STREAM</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stream Container -->
+  <div id="streamContainer" class="stream-container hidden">
     <video id="remoteVideo" autoplay playsinline muted></video>
-    <div id="controlStatus">Input: waiting</div>
+    <!-- Cinematic flash overlay -->
+    <div id="cinematicFlash" class="cinematic-flash"></div>
+    <!-- Screenshot flash -->
+    <div id="screenshotFlash" class="screenshot-flash"></div>
+  </div>
+
+  <!-- Performance HUD -->
+  <div id="perfHUD" class="perf-hud hidden">
+    <div class="hud-title"><i class="fa-solid fa-chart-line"></i> Performance</div>
+    <div class="hud-grid">
+      <div class="hud-item"><span class="hud-label">FPS</span><span class="hud-value" id="hudFps">--</span></div>
+      <div class="hud-item"><span class="hud-label">Latency</span><span class="hud-value" id="hudLatency">-- ms</span></div>
+      <div class="hud-item"><span class="hud-label">Bitrate</span><span class="hud-value" id="hudBitrate">-- Mbps</span></div>
+      <div class="hud-item"><span class="hud-label">Resolution</span><span class="hud-value" id="hudResolution">--</span></div>
+      <div class="hud-item"><span class="hud-label">Codec</span><span class="hud-value" id="hudCodec">--</span></div>
+      <div class="hud-item"><span class="hud-label">Pkt Loss</span><span class="hud-value" id="hudLoss">--%</span></div>
+      <div class="hud-item"><span class="hud-label">Jitter</span><span class="hud-value" id="hudJitter">-- ms</span></div>
+      <div class="hud-item"><span class="hud-label">Decode</span><span class="hud-value" id="hudDecode">-- ms</span></div>
+    </div>
+  </div>
+
+  <!-- Floating Toolbar -->
+  <div id="toolbar" class="toolbar hidden">
+    <div class="toolbar-inner">
+      <div class="toolbar-group">
+        <button class="tb-btn" id="btnMute" title="Mute/Unmute (M)"><i class="fa-solid fa-volume-high"></i></button>
+        <div class="volume-slider-wrap" id="volumeWrap">
+          <input type="range" min="0" max="100" value="100" class="volume-slider" id="volumeSlider">
+        </div>
+      </div>
+      <div class="toolbar-divider"></div>
+      <div class="toolbar-group">
+        <button class="tb-btn" id="btnStats" title="Stats (~)"><i class="fa-solid fa-chart-line"></i></button>
+        <button class="tb-btn" id="btnScreenshot" title="Screenshot (Ctrl+Shift+S)"><i class="fa-solid fa-camera"></i></button>
+        <button class="tb-btn" id="btnRecord" title="Record Clip (Ctrl+Shift+R)"><i class="fa-solid fa-circle-dot"></i></button>
+      </div>
+      <div class="toolbar-divider"></div>
+      <div class="toolbar-group">
+        <button class="tb-btn" id="btnFullscreen" title="Fullscreen (F11)"><i class="fa-solid fa-expand"></i></button>
+        <button class="tb-btn" id="btnPointerLock" title="Lock Cursor (L)"><i class="fa-solid fa-crosshairs"></i></button>
+        <button class="tb-btn" id="btnHelp" title="Shortcuts (?)"><i class="fa-solid fa-keyboard"></i></button>
+      </div>
+      <div class="toolbar-divider"></div>
+      <button class="tb-btn tb-btn-danger" id="btnDisconnect" title="Disconnect"><i class="fa-solid fa-power-off"></i></button>
+    </div>
+  </div>
+
+  <!-- Input Status Badge -->
+  <div id="controlStatus" class="control-status hidden">
+    <i class="fa-solid fa-gamepad"></i> <span id="controlText">Click stream to control</span>
+  </div>
+
+  <!-- Recording Indicator -->
+  <div id="recordingIndicator" class="recording-indicator hidden">
+    <span class="rec-dot"></span> REC <span id="recTime">00:00</span>
+  </div>
+
+  <!-- Pointer Lock Tooltip -->
+  <div id="pointerLockTip" class="pointer-lock-tip hidden">
+    <i class="fa-solid fa-mouse-pointer"></i> Click to capture mouse · <kbd>Esc</kbd> to release
+  </div>
+
+  <!-- Reconnection Overlay -->
+  <div id="reconnectOverlay" class="reconnect-overlay hidden">
+    <div class="reconnect-content">
+      <div class="reconnect-spinner"></div>
+      <h3>Connection Lost</h3>
+      <p id="reconnectMsg">Reconnecting in <span id="reconnectCountdown">5</span>s...</p>
+      <p class="reconnect-attempt">Attempt <span id="reconnectAttempt">1</span></p>
+      <button class="reconnect-cancel-btn" id="btnCancelReconnect">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Help Modal -->
+  <div id="helpModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2><i class="fa-solid fa-keyboard"></i> Keyboard Shortcuts</h2>
+        <button class="modal-close" id="btnCloseHelp"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="shortcut-grid">
+          <div class="shortcut-item"><kbd>F11</kbd> or <kbd>F</kbd><span>Toggle Fullscreen</span></div>
+          <div class="shortcut-item"><kbd>~</kbd> or <kbd>F3</kbd><span>Toggle Stats HUD</span></div>
+          <div class="shortcut-item"><kbd>M</kbd><span>Mute / Unmute</span></div>
+          <div class="shortcut-item"><kbd>L</kbd><span>Toggle Pointer Lock</span></div>
+          <div class="shortcut-item"><kbd>Esc</kbd><span>Release Controls</span></div>
+          <div class="shortcut-item"><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd><span>Screenshot</span></div>
+          <div class="shortcut-item"><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd><span>Record Clip</span></div>
+          <div class="shortcut-item"><kbd>?</kbd><span>This Help Panel</span></div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="/config.js"></script>
-  <!-- WebRTC Logic -->
-  <script>
-    const query = new URLSearchParams(window.location.search);
-    const room = query.get('room') || query.get('game') || 'default';
-    const pointerOffsetXPx = readNumberQuery('pointerOffsetX', 0);
-    const pointerOffsetYPx = readNumberQuery('pointerOffsetY', -18);
-    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${wsProtocol}//${window.location.host}`);
-    const rtcConfig = window.PIXULSE_CONFIG?.rtcConfig || {
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' }
-      ]
-    };
-
-    let peerConnection;
-    let inputChannel;
-    let id = null;
-    let inputCaptured = false;
-    let lastMouseMoveAt = 0;
-    const pressedKeys = new Set();
-    const pressedButtons = new Set();
-
-    const videoElement = document.getElementById('remoteVideo');
-    const waitingWrapper = document.getElementById('waiting-wrapper');
-    const controlStatus = document.getElementById('controlStatus');
-
-    videoElement.tabIndex = 0;
-    videoElement.controls = false;
-    videoElement.disablePictureInPicture = true;
-
-    ws.addEventListener('open', () => {
-      ws.send(JSON.stringify({ type: 'register', role: 'viewer', room }));
-    });
-
-    ws.addEventListener('message', async (event) => {
-      const msg = JSON.parse(event.data);
-
-      if (msg.type === 'registered') {
-        id = msg.id;
-      }
-
-      if (msg.type === 'streamer-disconnected') {
-        resetToWaiting();
-      }
-
-      if (msg.type === 'offer') {
-        peerConnection = new RTCPeerConnection(rtcConfig);
-
-        peerConnection.ondatachannel = (event) => {
-          inputChannel = event.channel;
-          setControlStatus('Input: connecting');
-          inputChannel.addEventListener('open', () => {
-            setControlStatus('Input: ready. Click stream to control');
-            sendInput({ type: 'client-ready' });
-          });
-          inputChannel.addEventListener('close', () => {
-            setControlStatus('Input: disconnected');
-          });
-        };
-
-        peerConnection.ontrack = (event) => {
-          const stream = event.streams[0];
-
-          if (stream.getVideoTracks().length === 0) {
-            resetToWaiting();
-            return;
-          }
-
-          videoElement.srcObject = stream;
-          waitingWrapper.style.display = 'none';
-          videoElement.style.display = 'block';
-          controlStatus.style.display = 'block';
-          videoElement.focus();
-        };
-
-        peerConnection.onicecandidate = (e) => {
-          if (e.candidate) {
-            ws.send(JSON.stringify({
-              type: 'ice-candidate',
-              data: e.candidate,
-              to: 'streamer',
-              from: id
-            }));
-          }
-        };
-
-        peerConnection.oniceconnectionstatechange = () => {
-          const state = peerConnection.iceConnectionState;
-          if (state === 'disconnected' || state === 'failed' || state === 'closed') {
-            releaseAllControls();
-            resetToWaiting();
-          }
-        };
-
-        await peerConnection.setRemoteDescription(new RTCSessionDescription(msg.data));
-        const answer = await peerConnection.createAnswer();
-        await peerConnection.setLocalDescription(answer);
-
-        ws.send(JSON.stringify({
-          type: 'answer',
-          data: answer,
-          to: 'streamer',
-          from: id
-        }));
-      }
-
-      if (msg.type === 'ice-candidate' && peerConnection) {
-        await peerConnection.addIceCandidate(new RTCIceCandidate(msg.data));
-      }
-    });
-
-    function sendInput(payload) {
-      if (!inputChannel || inputChannel.readyState !== 'open') return;
-      if (payload.type.startsWith('mouse-move') && inputChannel.bufferedAmount > 16384) return;
-      inputChannel.send(JSON.stringify({ ...payload, ts: performance.now() }));
-    }
-
-    function getVideoPoint(event) {
-      const rect = videoElement.getBoundingClientRect();
-      const style = window.getComputedStyle(videoElement);
-      const leftInset = parseFloat(style.borderLeftWidth) + parseFloat(style.paddingLeft);
-      const rightInset = parseFloat(style.borderRightWidth) + parseFloat(style.paddingRight);
-      const topInset = parseFloat(style.borderTopWidth) + parseFloat(style.paddingTop);
-      const bottomInset = parseFloat(style.borderBottomWidth) + parseFloat(style.paddingBottom);
-      const contentLeft = rect.left + leftInset;
-      const contentTop = rect.top + topInset;
-      const contentWidth = rect.width - leftInset - rightInset;
-      const contentHeight = rect.height - topInset - bottomInset;
-      const adjustedX = event.clientX + pointerOffsetXPx;
-      const adjustedY = event.clientY + pointerOffsetYPx;
-
-      return {
-        x: clamp((adjustedX - contentLeft) / contentWidth, 0, 1),
-        y: clamp((adjustedY - contentTop) / contentHeight, 0, 1)
-      };
-    }
-
-    function readNumberQuery(name, fallback) {
-      const value = Number(query.get(name));
-      return Number.isFinite(value) ? value : fallback;
-    }
-
-    function clamp(value, min, max) {
-      return Math.min(Math.max(value, min), max);
-    }
-
-    function shouldCaptureKeyboard(event) {
-      return videoElement.style.display === 'block' &&
-        inputCaptured &&
-        !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
-    }
-
-    function releaseAllControls() {
-      inputCaptured = false;
-
-      for (const code of pressedKeys) {
-        sendInput({ type: 'key', action: 'up', code });
-      }
-      pressedKeys.clear();
-
-      for (const button of pressedButtons) {
-        sendInput({ type: 'mouse-button', action: 'up', button });
-      }
-      pressedButtons.clear();
-    }
-
-    function setControlStatus(text) {
-      controlStatus.textContent = text;
-      controlStatus.style.display = 'block';
-    }
-
-    function resetToWaiting() {
-      videoElement.style.display = 'none';
-      waitingWrapper.style.display = 'flex';
-      videoElement.srcObject = null;
-    }
-
-    function captureControls() {
-      if (!inputChannel || inputChannel.readyState !== 'open') {
-        setControlStatus('Input: not ready yet');
-        return false;
-      }
-
-      videoElement.focus();
-      inputCaptured = true;
-      setControlStatus('Input: controlling. Press Esc to release');
-      return true;
-    }
-
-    videoElement.addEventListener('mousemove', (event) => {
-      if (!inputCaptured) return;
-      const now = performance.now();
-      if (now - lastMouseMoveAt < 8) return;
-      lastMouseMoveAt = now;
-
-      const point = getVideoPoint(event);
-      sendInput({
-        type: 'mouse-move-absolute',
-        x: point.x,
-        y: point.y
-      });
-    });
-
-    videoElement.addEventListener('mousedown', (event) => {
-      event.preventDefault();
-      if (!captureControls()) return;
-
-      const point = getVideoPoint(event);
-      sendInput({
-        type: 'mouse-move-absolute',
-        x: point.x,
-        y: point.y
-      });
-      pressedButtons.add(event.button);
-      sendInput({ type: 'mouse-button', action: 'down', button: event.button });
-    });
-
-    window.addEventListener('mouseup', (event) => {
-      if (!pressedButtons.has(event.button)) return;
-      pressedButtons.delete(event.button);
-      sendInput({ type: 'mouse-button', action: 'up', button: event.button });
-    });
-
-    videoElement.addEventListener('contextmenu', (event) => {
-      event.preventDefault();
-    });
-
-    videoElement.addEventListener('click', (event) => {
-      event.preventDefault();
-      captureControls();
-    });
-
-    videoElement.addEventListener('dblclick', (event) => {
-      event.preventDefault();
-    });
-
-    videoElement.addEventListener('pause', () => {
-      videoElement.play().catch(() => {});
-    });
-
-    videoElement.addEventListener('wheel', (event) => {
-      event.preventDefault();
-      if (!inputCaptured) return;
-      sendInput({
-        type: 'mouse-wheel',
-        deltaX: event.deltaX,
-        deltaY: event.deltaY
-      });
-    }, { passive: false });
-
-    window.addEventListener('keydown', (event) => {
-      if (event.code === 'Escape' && inputCaptured) {
-        event.preventDefault();
-        releaseAllControls();
-        setControlStatus('Input: ready. Click stream to control');
-        return;
-      }
-
-      if (!shouldCaptureKeyboard(event) || event.repeat) return;
-      event.preventDefault();
-      pressedKeys.add(event.code);
-      sendInput({ type: 'key', action: 'down', code: event.code });
-    });
-
-    window.addEventListener('keyup', (event) => {
-      if (!pressedKeys.has(event.code)) return;
-      event.preventDefault();
-      pressedKeys.delete(event.code);
-      sendInput({ type: 'key', action: 'up', code: event.code });
-    });
-
-    window.addEventListener('blur', releaseAllControls);
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) releaseAllControls();
-    });
-  </script>
-
+  <script src="client-app.js"></script>
 </body>
-
 </html>

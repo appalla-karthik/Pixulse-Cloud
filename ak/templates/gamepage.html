@@ -1,17 +1,7 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{game.title}}</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'style.css' %}">
-    <style>
+{% block extra_css %}
         body {
 
             color: white;
@@ -66,55 +56,9 @@
 
         }
     </style>
-</head>
+{% endblock %}
 
-<body>
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-        <div class="container-fluid">
-            <div class="navbar-header">
-                <a class="navbar-brand" href="#"><img src="{% static 'img/logo.png' %}" alt=""></a>
-            </div>
-            <ul class="nav navbar-nav">
-                <li class=" brandname active"><a href="#"><b>PIXULSE CLOUD
-                            BETA</b></a></li>
-            </ul>
-            <form class="navbar-form navbar-right" action="/action_page.php">
-                <div class="search-container">
-                    <button class="search-btn">
-                        <i class="glyphicon glyphicon-search"></i>
-                    </button>
-                    <div class="search-dropdown">
-                        <input type="text" class="search-input" placeholder="Search...">
-                    </div>
-                </div>
-
-
-            </form>
-            <ul class="nav navbar-nav navbar-right">
-                <li class="active" style="margin-right: 10px;"><a href="{% url 'home' %}" class="nav-button">HOME</a></li>
-                <li style="margin-right: 10px;"><a href="#" class="nav-button">USERVERSE</a></li>
-                <li style="margin-right: 10px;"><a href="#" class="nav-button">GUILDNEXUS</a></li>
-                <li class="dropdown" style="margin-right: 10px;">
-                    <a href="#" class="dropdown-toggle nav-button" data-toggle="dropdown" role="button"
-                        aria-haspopup="true" aria-expanded="false">
-                        ARENA INSIGHTS
-                    </a>
-                    <ul class="dropdown-menu custom-dropdown">
-                        <li><a href="#">Latest Trends</a></li>
-                        <li><a href="#">Industry Insights</a></li>
-                        <li><a href="#">Workshops</a></li>
-                    </ul>
-                </li>
-                <li style="margin-right: 10px;"><a href="#" class="nav-button"></span> ESPORTS</a></li>
-                {% if user.is_authenticated %}
-                <li><a href="accounts/logout">LOGOUT</a></li>
-                {% else %}
-                <li style="margin-right: 10px;"><a href="{% url 'register' %}" class="nav-button">SIGN IN</a></li>
-                <li style="margin-right: 10px;"><a href="{% url 'login' %}" class="nav-button">LOGIN</a></li>
-                {% endif %}
-            </ul>
-        </div>
-    </nav>
+{% block content %}
     <div class="game-container">
         <div class="container">
             <img src="{{ game.logo.url }}" alt="{{ game.title }}" class="game-image">
@@ -147,6 +91,4 @@
             </div>
         </div>
     </div>
-</body>
-
-</html>
+{% endblock %}

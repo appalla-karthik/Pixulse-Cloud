@@ -1,0 +1,411 @@
+{% extends 'base.html' %}
+
+{% block title %}Userverse - Pixulse Cloud{% endblock %}
+
+{% block extra_css %}
+/* HERO BANNER */
+.hero-banner {
+    height: 300px;
+    background: url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80') center/cover;
+    position: relative;
+    border-radius: 0 0 20px 20px;
+    margin-top: -30px; /* offset container padding */
+    box-shadow: inset 0 -100px 100px -50px var(--bg-primary);
+}
+
+.profile-avatar-container {
+    position: absolute;
+    bottom: -60px;
+    left: 50px;
+    display: flex;
+    align-items: flex-end;
+    gap: 30px;
+}
+
+.profile-avatar {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: url('https://ui-avatars.com/api/?name=C+N&background=00ffff&color=000&size=150') center/cover;
+    border: 5px solid var(--bg-primary);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+    position: relative;
+}
+
+.status-dot {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 25px;
+    height: 25px;
+    background: #00ff00;
+    border: 4px solid var(--bg-primary);
+    border-radius: 50%;
+    box-shadow: 0 0 10px #00ff00;
+    animation: pulse-green 2s infinite;
+}
+
+@keyframes pulse-green {
+    0% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(0, 255, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0); }
+}
+
+.profile-info h1 {
+    font-size: 42px;
+    font-weight: 800;
+    margin: 0;
+    text-shadow: 2px 2px 10px rgba(0,0,0,0.8);
+    letter-spacing: -1px;
+}
+
+/* STAT CARDS */
+.stat-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    text-align: center;
+}
+.stat-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent-primary);
+    box-shadow: 0 10px 20px rgba(0, 255, 255, 0.1);
+    background: rgba(0, 255, 255, 0.05);
+}
+
+.stat-value {
+    font-size: 32px;
+    font-weight: 800;
+    color: white;
+    margin-top: 10px;
+}
+.stat-label {
+    font-family: var(--font-retro);
+    font-size: 10px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.stat-icon {
+    font-size: 24px;
+    color: var(--accent-primary);
+    margin-bottom: 5px;
+}
+
+/* GAME CARDS */
+.game-card {
+    background: rgba(0,0,0,0.5);
+    border-radius: 15px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: 0.3s;
+}
+.game-card:hover {
+    transform: scale(1.02);
+    border-color: var(--accent-primary);
+    box-shadow: 0 5px 15px rgba(0,255,255,0.2);
+}
+.game-cover {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.game-details {
+    padding: 15px;
+}
+.game-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.game-meta {
+    font-size: 12px;
+    color: #888;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+.progress-bar-custom {
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+}
+.btn-launch {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--accent-primary);
+    color: var(--accent-primary);
+    padding: 8px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: 0.3s;
+    font-family: var(--font-retro);
+    font-size: 10px;
+}
+.btn-launch:hover {
+    background: var(--accent-primary);
+    color: #000;
+    box-shadow: 0 0 10px var(--accent-primary);
+}
+
+/* FRIEND LIST */
+.friend-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: rgba(255,255,255,0.02);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    transition: 0.3s;
+    border: 1px solid transparent;
+}
+.friend-item:hover {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.1);
+}
+.friend-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    position: relative;
+}
+.friend-status-dot {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--bg-primary);
+}
+.dot-online { background: #00ff00; }
+.dot-away { background: #ffaa00; }
+.dot-offline { background: #555555; }
+
+.friend-info { flex: 1; }
+.friend-name { font-weight: 600; font-size: 14px; color: white; margin-bottom: 3px; }
+.friend-state { font-size: 11px; color: #888; }
+.state-playing { color: var(--accent-primary); font-weight: 600; }
+
+.action-icon {
+    color: rgba(255,255,255,0.3);
+    cursor: pointer;
+    transition: 0.3s;
+}
+.action-icon:hover {
+    color: white;
+}
+
+/* HEATMAP */
+.heatmap-grid {
+    display: grid;
+    grid-template-columns: repeat(30, 1fr);
+    gap: 3px;
+}
+.heatmap-cell {
+    aspect-ratio: 1;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.05);
+    transition: 0.2s;
+    cursor: pointer;
+}
+.heatmap-cell:hover {
+    transform: scale(1.5);
+    z-index: 10;
+}
+.h-low { background: rgba(0, 255, 255, 0.2); }
+.h-med { background: rgba(0, 255, 255, 0.6); }
+.h-high { background: var(--accent-primary); box-shadow: 0 0 5px var(--accent-primary); }
+
+.section-title {
+    font-family: var(--font-retro);
+    font-size: 14px;
+    color: white;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.section-title i {
+    color: var(--accent-primary);
+}
+{% endblock %}
+
+{% block content %}
+<div style="position: relative; margin-bottom: 80px;">
+    <div class="hero-banner"></div>
+    
+    <!-- Profile Header overlapping banner -->
+    <div class="profile-avatar-container">
+        <div class="profile-avatar">
+            <div class="status-dot"></div>
+        </div>
+        <div class="profile-info" style="padding-bottom: 10px;">
+            <h1>{{ stats.username }}</h1>
+            <div style="display: flex; gap: 15px; margin-top: 10px; align-items: center;">
+                <span style="background: rgba(255,255,255,0.1); padding: 5px 15px; border-radius: 20px; font-size: 12px; color: #ccc;">
+                    <i class="fa fa-star" style="color: gold;"></i> Lvl {{ stats.level }}
+                </span>
+                <span style="background: rgba(0,255,255,0.1); border: 1px solid var(--accent-primary); padding: 5px 15px; border-radius: 20px; font-size: 12px; color: var(--accent-primary); font-family: var(--font-retro);">
+                    {{ stats.rank }}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    
+    <!-- Main Content Layout -->
+    <div class="row">
+        
+        <!-- LEFT COLUMN (Main Stats & Library) -->
+        <div class="col-md-8">
+            
+            <!-- Analytics Grid -->
+            <div class="row" style="margin-bottom: 30px;">
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card">
+                        <i class="fa fa-clock-o stat-icon"></i>
+                        <div class="stat-value">{{ stats.hours_played }}h</div>
+                        <div class="stat-label">Cloud Time</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card">
+                        <i class="fa fa-crosshairs stat-icon" style="color: var(--accent-secondary);"></i>
+                        <div class="stat-value">{{ stats.kd_ratio }}</div>
+                        <div class="stat-label">K/D Ratio</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card">
+                        <i class="fa fa-trophy stat-icon" style="color: gold;"></i>
+                        <div class="stat-value">{{ stats.win_rate }}</div>
+                        <div class="stat-label">Win Rate</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card">
+                        <i class="fa fa-unlock-alt stat-icon" style="color: #00ff00;"></i>
+                        <div class="stat-value">{{ stats.achievements }}</div>
+                        <div class="stat-label">Unlocked</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Heatmap -->
+            <div class="glass-panel" style="margin-bottom: 30px;">
+                <div class="section-title"><i class="fa fa-calendar"></i> Activity Matrix (30 Days)</div>
+                <div class="heatmap-grid" id="heatmapGrid">
+                    <!-- Populated by JS -->
+                </div>
+                <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 15px; font-size: 10px; color: #888;">
+                    <span>Less</span>
+                    <div class="heatmap-cell"></div>
+                    <div class="heatmap-cell h-low"></div>
+                    <div class="heatmap-cell h-med"></div>
+                    <div class="heatmap-cell h-high"></div>
+                    <span>More</span>
+                </div>
+            </div>
+
+            <!-- Game Library Grid -->
+            <div class="glass-panel">
+                <div class="section-title"><i class="fa fa-gamepad"></i> Pixulse Library</div>
+                
+                <div class="row">
+                    {% for game in stats.recent_games %}
+                    <div class="col-md-6" style="margin-bottom: 20px;">
+                        <div class="game-card">
+                            <img src="{{ game.cover }}" class="game-cover">
+                            <div class="game-details">
+                                <h3 class="game-title">{{ game.title }}</h3>
+                                <div class="game-meta">
+                                    <span>Playtime: {{ game.hours }}h</span>
+                                    <span>{{ game.progress }}% Complete</span>
+                                </div>
+                                <div class="progress-bar-custom">
+                                    <div class="progress-fill" style="width: {{ game.progress }}%;"></div>
+                                </div>
+                                <button class="btn-launch"><i class="fa fa-play"></i> LAUNCH STREAM</button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN (Social/Comms) -->
+        <div class="col-md-4">
+            
+            <div class="glass-panel" style="padding: 25px;">
+                <div class="section-title"><i class="fa fa-globe"></i> Comms Link</div>
+                
+                <div class="friends-list">
+                    {% for friend in stats.friends %}
+                    <div class="friend-item">
+                        <div class="friend-avatar">
+                            <img src="{{ friend.avatar }}" style="width: 100%; height: 100%; border-radius: 50%;">
+                            <div class="friend-status-dot dot-{{ friend.state }}"></div>
+                        </div>
+                        <div class="friend-info">
+                            <div class="friend-name">{{ friend.name }}</div>
+                            <div class="friend-state {% if friend.state == 'online' %}state-playing{% endif %}">
+                                {{ friend.status }}
+                            </div>
+                        </div>
+                        <div class="action-icon" title="Invite to Party">
+                            <i class="fa fa-user-plus"></i>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <button class="pulse-button" style="width: 100%; margin-top: 20px; font-size: 10px; padding: 12px;">
+                    <i class="fa fa-search"></i> FIND PLAYERS
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Generate Random Activity Heatmap strictly for visual fidelity
+    $(document).ready(function() {
+        let container = $("#heatmapGrid");
+        for (let i = 0; i < 90; i++) {
+            let rand = Math.random();
+            let cls = rand > 0.85 ? 'h-high' : rand > 0.6 ? 'h-med' : rand > 0.3 ? 'h-low' : '';
+            container.append(`<div class="heatmap-cell ${cls}" title="Activity Load: ${Math.round(rand*100)}%"></div>`);
+        }
+    });
+</script>
+{% endblock %}

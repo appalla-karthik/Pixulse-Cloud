@@ -313,6 +313,24 @@
             });
         });
     </script>
-</body>
+    <!-- GOOEY CURSOR HTML -->
+    <div class="cursor">
+        <div class="cursor__inner">
+            <!-- JS inserts boxes -->
+        </div>
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1">
+            <defs>
+                <filter id="gooey">
+                    <feGaussianBlur in="SourceGraphic" result="blur" stdDeviation="3.2" />
+                    <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -7" result="goo" />
+                    <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+                </filter>
+            </defs>
+        </svg>
+    </div>
 
+    <!-- GOOEY CURSOR SCRIPTS -->
+    <script src="{% static 'js/gsap.min.js' %}?v=2"></script>
+    <script type="module" src="{% static 'js/index.js' %}?v=2"></script>
+</body>
 </html>

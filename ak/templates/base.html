@@ -1,0 +1,183 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Pixulse Cloud{% endblock %}</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    
+    <link rel="stylesheet" href="{% static 'style.css' %}?v=5">
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="{% static 'script.js' %}" defer></script>
+
+    <style>
+        /* ===== CLASSY GLASSMORPHISM THEME ===== */
+        :root {
+            --bg-primary: #131313;
+            --accent-primary: #00ffff;
+            --accent-secondary: #ff007f;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --font-retro: 'Press Start 2P', cursive;
+            --font-modern: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            background-image: url("{% static 'img/bg.png' %}");
+            background-size: cover;
+            background-attachment: fixed;
+            color: var(--text-primary);
+            font-family: var(--font-modern);
+            margin: 0;
+            padding-top: 52px;
+        }
+
+        h1, h2, h3, h4, h5, h6, .retro-text, .navbar {
+            font-family: var(--font-retro);
+        }
+
+        /* ===== COMMON CLASSY COMPONENTS ===== */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            margin-bottom: 30px;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+        
+        .glass-panel:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .glass-panel.highlight {
+            border-top: 2px solid var(--accent-primary);
+            background: linear-gradient(135deg, rgba(0,255,255,0.05) 0%, rgba(255,255,255,0.05) 100%);
+        }
+
+        .page-header-retro {
+            font-size: 20px;
+            color: white;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+            margin-bottom: 15px;
+            line-height: 1.4;
+            font-weight: normal;
+        }
+        
+        .page-subtitle-retro {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            font-family: var(--font-modern);
+        }
+
+        /* Use existing style.css classes where possible:
+           - navbar is defined in style.css, we just reuse the HTML structure from home.html
+           - glow-on-hover btn
+           - pulse-button
+        */
+
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-primary); }
+        
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#mainNav">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="{% url 'home' %}">
+                    <img src="{% static 'img/logo.png' %}" alt="Pixulse Cloud">
+                    <span class="brandname">PIXULSE CLOUD BETA</span>
+                </a>
+            </div>
+
+            <!-- RIGHT SEARCH (Hidden in mobile) -->
+            <form class="navbar-form navbar-right hidden-xs">
+                <div class="search-container">
+                    <button class="search-btn"><i class="glyphicon glyphicon-search"></i></button>
+                    <div class="search-dropdown">
+                        <input type="text" class="search-input" placeholder="Search...">
+                    </div>
+                </div>
+            </form>
+
+            <!-- COLLAPSING NAV LINKS -->
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="{% url 'home' %}" class="nav-button">HOME</a></li>
+                    <li><a href="{% url 'userverse' %}" class="nav-button">USERVERSE</a></li>
+                    <li><a href="{% url 'guildnexus' %}" class="nav-button">GUILDNEXUS</a></li>
+
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle nav-button" data-toggle="dropdown">
+                            ARENA INSIGHTS <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu custom-dropdown">
+                            <li><a href="{% url 'arena_trends' %}">Latest Trends</a></li>
+                            <li><a href="{% url 'arena_industry' %}">Industry Insights</a></li>
+                            <li><a href="{% url 'arena_workshops' %}">Workshops</a></li>
+                        </ul>
+                    </li>
+
+                    <li><a href="{% url 'esports' %}" class="nav-button">ESPORTS</a></li>
+
+                    {% if user.is_authenticated %}
+                        <li><a href="{% url 'logout' %}">LOGOUT</a></li>
+                    {% else %}
+                        <li><a href="{% url 'login' %}" class="nav-button">LOGIN</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <!-- GOOEY CURSOR HTML -->
+    <div class="cursor">
+        <div class="cursor__inner">
+            <!-- JS inserts boxes -->
+        </div>
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1">
+            <defs>
+                <filter id="gooey">
+                    <feGaussianBlur in="SourceGraphic" result="blur" stdDeviation="3.2" />
+                    <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -7" result="goo" />
+                    <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+                </filter>
+            </defs>
+        </svg>
+    </div>
+
+    <!-- GOOEY CURSOR SCRIPTS -->
+    <script src="{% static 'js/gsap.min.js' %}?v=3"></script>
+    <script type="module" src="{% static 'js/index.js' %}?v=3"></script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

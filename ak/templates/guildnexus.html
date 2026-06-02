@@ -1,0 +1,431 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Guildnexus - Pixulse Cloud{% endblock %}
+
+{% block extra_css %}
+/* Custom styles for Guildnexus */
+.guild-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+}
+.guild-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 255, 255, 0.1);
+    border-color: rgba(0, 255, 255, 0.3);
+}
+.guild-tag {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 255, 255, 0.2);
+    color: #4sffff;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 9px;
+    font-family: var(--font-retro);
+    border: 1px solid rgba(0,255,255,0.4);
+}
+.guild-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #111, #333);
+    border-radius: 50%;
+    margin: 0 auto 15px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: var(--accent-primary);
+    border: 2px solid rgba(255,255,255,0.1);
+}
+.search-hero {
+    background: url('{% static "img/bg.png" %}') center/cover;
+    border-radius: 20px;
+    padding: 60px 20px;
+    text-align: center;
+    box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 40px;
+}
+.search-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+}
+.custom-tabs .nav-tabs {
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: center;
+}
+.custom-tabs .nav-tabs > li > a {
+    color: var(--text-secondary);
+    font-family: var(--font-retro);
+    font-size: 12px;
+    border: none;
+    background: transparent;
+    transition: all 0.3s;
+    padding: 15px 30px;
+    margin-right: 10px;
+}
+.custom-tabs .nav-tabs > li.active > a, 
+.custom-tabs .nav-tabs > li.active > a:hover {
+    color: var(--accent-primary);
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-bottom-color: transparent;
+    border-radius: 10px 10px 0 0;
+}
+.custom-tabs .nav-tabs > li > a:hover {
+    background: rgba(255,255,255,0.02);
+}
+
+/* Modal Styling */
+.glass-modal .modal-content {
+    background: rgba(15, 15, 15, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(0,255,255,0.2);
+    border-radius: 15px;
+    box-shadow: 0 0 30px rgba(0,255,255,0.1);
+}
+.glass-modal .modal-header {
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    color: white;
+}
+.glass-modal .close { color: white; opacity: 0.8; text-shadow: none; font-size: 30px; }
+
+/* Custom Inputs */
+.custom-input {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    border-radius: 5px;
+    padding: 10px;
+    width: 100%;
+    margin-bottom: 15px;
+}
+.custom-input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+}
+{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 30px;">
+    
+    <!-- Immersive Search Hero -->
+    <div class="search-hero">
+        <div style="position: relative; z-index: 1;">
+            <br>
+            <h1 class="page-header-retro" style="font-size: 28px; text-shadow: 0 0 20px rgba(0,255,255,0.5);">GUILDNEXUS TERMINAL</h1>
+            <p class="page-subtitle-retro">Find your squad. Dominate the Cloud.</p>
+            
+            <div style="max-width: 600px; margin: 0 auto; display: flex; gap: 10px;">
+                <input type="text" id="guildSearch" placeholder="Search parameters: [guild_name, game, tag]..." 
+                       style="flex: 1; padding: 15px 20px; background: rgba(0,0,0,0.5); border: 1px solid rgba(0,255,255,0.4); border-radius: 30px; color: var(--accent-primary); outline: none; font-size: 14px; backdrop-filter: blur(10px); font-family: var(--font-retro);">
+            </div>
+            
+            <!-- Dense Stat Bar below search -->
+            <div style="display: flex; justify-content: center; gap: 40px; margin-top: 30px; color: #888; font-size: 11px; font-family: var(--font-modern);">
+                <span><i class="fa fa-shield" style="color:var(--accent-primary)"></i> ACTIVE GUILDS: {{ guilds|length }}</span>
+                <span><i class="fa fa-users" style="color:var(--accent-primary)"></i> PLAYERS SEEKING: 1,402</span>
+                <span><i class="fa fa-globe" style="color:var(--accent-primary)"></i> REGIONS: ALL</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Tabs -->
+    <div class="custom-tabs">
+        <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active"><a href="#explore" aria-controls="explore" role="tab" data-toggle="tab">Explore Directory</a></li>
+            <li role="presentation"><a href="#recruitment" aria-controls="recruitment" role="tab" data-toggle="tab">Recruitment Board</a></li>
+            <li role="presentation"><a href="#myguild" aria-controls="myguild" role="tab" data-toggle="tab">Command Center</a></li>
+        </ul>
+
+        <div class="tab-content" style="padding-bottom: 50px;">
+            <!-- TAB 1: Explore Guilds -->
+            <div role="tabpanel" class="tab-pane fade in active" id="explore">
+                <div class="row">
+                    {% for guild in guilds %}
+                    <div class="col-md-3 col-sm-6" style="margin-bottom: 25px;">
+                        <div class="guild-card">
+                            <div class="guild-tag">[{{ guild.tag }}]</div>
+                            <div class="guild-icon">
+                                <i class="fa fa-shield"></i>
+                            </div>
+                            <h3 style="font-size: 14px; font-family: var(--font-modern); font-weight: bold; margin-top: 10px; margin-bottom: 5px; color: white;">{{ guild.name }}</h3>
+                            <p style="color: var(--accent-primary); font-size: 12px; margin-bottom: 10px;">{{ guild.game }}</p>
+                            <p style="color: #888; font-size: 11px; height: 35px; overflow: hidden; margin-bottom: 15px;">{{ guild.description|default:"No description provided." }}</p>
+                            
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; margin-bottom: 20px;">
+                                <div style="font-size: 10px; color: #bbb;"><i class="fa fa-users" style="color:var(--text-primary)"></i> {{ guild.member_count }}/200</div>
+                                <div style="font-size: 10px; color: #bbb;"><i class="fa fa-globe"></i> Global</div>
+                            </div>
+                            
+                            <button class="pulse-button apply-btn" data-guild-id="{{ guild.id }}" data-guild-name="{{ guild.name }}" data-toggle="modal" data-target="#applyModal" style="width: 100%; border-radius: 8px; margin: 0; padding: 10px; font-size: 10px;">Enlist Now</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- TAB 2: Recruitment Board -->
+            <div role="tabpanel" class="tab-pane fade" id="recruitment">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="glass-panel">
+                            <h3 class="page-header-retro" style="font-size: 16px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">Active Bounties & Rosters</h3>
+                            <div class="row" id="postsContainer">
+                                {% for post in posts %}
+                                <div class="col-md-12" style="margin-bottom: 15px;">
+                                    <div style="background: rgba(0,0,0,0.4); border-left: 4px solid var(--accent-primary); padding: 20px; border-radius: 0 10px 10px 0;">
+                                        <h4 style="color: white; font-weight: 600; font-size: 16px; margin-top: 0;">{{ post.title }}</h4>
+                                        <p style="color: #bbb; font-size: 13px;">"{{ post.description }}"</p>
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                                            <span style="font-family: var(--font-retro); font-size: 9px; color: #888;">By: [{{ post.guild.tag }}] {{ post.author }}</span>
+                                            <button class="pixel-btn" style="margin:0; padding: 6px 12px; font-size: 8px; border-radius: 5px;" onclick="alert('Message feature coming in V2!')">Communicate</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <div class="col-md-12 text-center" style="padding: 30px; color: #888;">
+                                    <p>No active recruitment posts currently.</p>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="glass-panel">
+                            <h3 class="page-header-retro" style="font-size: 14px; margin-bottom: 20px;">Transmit Request</h3>
+                            <form id="createPostForm">
+                                <label style="font-size: 10px; color: #888;">Select Guild Authorization:</label>
+                                <select id="postGuildId" class="custom-input">
+                                    {% for guild in guilds %}
+                                    <option value="{{ guild.id }}">[{{ guild.tag }}] {{ guild.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                
+                                <label style="font-size: 10px; color: #888;">Broadcast Title:</label>
+                                <input type="text" id="postTitle" class="custom-input" placeholder="e.g. Need Diamond Healer" required>
+                                
+                                <label style="font-size: 10px; color: #888;">Operational Details:</label>
+                                <textarea id="postDesc" class="custom-input" rows="4" placeholder="Requirements, schedule, etc..." required></textarea>
+                                
+                                <button type="submit" class="glow-on-hover" style="width: 100%; border-radius: 5px; height: 40px; font-size: 10px; margin-top: 10px;" id="submitPostBtn">Execute Broadcast</button>
+                            </form>
+                            <div id="postSuccess" style="display: none; color: #00ff00; font-size: 12px; margin-top: 10px; text-align: center;"><i class="fa fa-check"></i> Broadcast Sent!</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: My Guild / Command Center -->
+            <div role="tabpanel" class="tab-pane fade" id="myguild">
+                <div class="row">
+                    <!-- Status -->
+                    <div class="col-md-5">
+                        <div class="glass-panel text-center" style="padding: 60px 20px; height: 100%;">
+                            <i class="fa fa-user-times" style="font-size: 60px; color: #555; margin-bottom: 20px;"></i>
+                            <h3 class="page-header-retro" style="font-size: 16px; color: #aaa;">UNAFFILIATED</h3>
+                            <p style="color: #888; font-family: var(--font-modern); font-size: 12px;">You do not currently hold rank in any active guild structure.</p>
+                        </div>
+                    </div>
+                    <!-- Create Guild Form -->
+                    <div class="col-md-7">
+                        <div class="glass-panel" style="border-top: 2px solid var(--accent-secondary);">
+                            <h3 class="page-header-retro" style="font-size: 16px; margin-bottom: 20px;">Found a New Syndicate</h3>
+                            <form id="createGuildForm">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <label style="font-size: 10px; color: #888;">Syndicate Name</label>
+                                        <input type="text" id="guildName" class="custom-input" placeholder="e.g. Cyber Assassins" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label style="font-size: 10px; color: #888;">Callsign Tag</label>
+                                        <input type="text" id="guildTag" class="custom-input" placeholder="e.g. CA" maxlength="5" required>
+                                    </div>
+                                </div>
+                                <label style="font-size: 10px; color: #888;">Primary Operation (Game)</label>
+                                <input type="text" id="guildGame" class="custom-input" placeholder="e.g. Valorant, Apex Legends" required>
+                                
+                                <label style="font-size: 10px; color: #888;">Manifesto (Description)</label>
+                                <textarea id="guildDesc" class="custom-input" rows="3" placeholder="What is your guild's purpose?"></textarea>
+                                
+                                <button type="submit" class="pulse-button" style="width: 100%; border-radius: 5px; margin: 10px 0 0 0; border: 1px solid var(--accent-secondary);" id="submitGuildBtn">Initialize Guild Protocol</button>
+                            </form>
+                            <div id="guildSuccess" style="display: none; color: #00ff00; font-size: 12px; text-align: center; margin-top: 15px;"><i class="fa fa-check"></i> Syndicate established successfully! Refreshing terminal...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Apply Modal (Glassmorphic) -->
+<div class="modal fade glass-modal" id="applyModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" style="font-family: var(--font-retro); font-size: 12px;">Enlistment Protocol: <span id="modalGuildName" style="color: var(--accent-primary);"></span></h4>
+      </div>
+      <div class="modal-body" style="padding: 30px;">
+        <div id="applyFormSection">
+            <input type="hidden" id="applyGuildId" value="">
+            <p style="color: #ccc; margin-bottom: 20px; font-size: 13px;">Transmit an encrypted message to the Guild Command:</p>
+            <textarea id="applyMessage" class="custom-input" rows="4" placeholder="I request access because..."></textarea>
+            
+            <div style="margin-top: 15px;">
+                <label style="color: #aaa; font-weight: normal; font-size: 11px; cursor: pointer;">
+                    <input type="checkbox" id="applyShareStats" checked style="margin-right: 5px;"> Attach Userverse Telemetry Data (Rank, Hours)
+                </label>
+            </div>
+        </div>
+        <div id="applySuccessSection" style="display: none; text-align: center; padding: 20px 0;">
+            <i class="fa fa-fingerprint" style="font-size: 60px; color: var(--accent-primary); margin-bottom: 20px;"></i>
+            <h3 style="font-family: var(--font-modern); color: white; margin-top:0; font-size: 20px;">Request Encrypted & Dispatched</h3>
+            <p style="color: #aaa; font-size: 12px;">Command will review your telemetry shortly.</p>
+        </div>
+      </div>
+      <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.1);">
+        <button type="button" class="btn btn-default" data-dismiss="modal" style="background: transparent; color: white; border: 1px solid #555;">Abort</button>
+        <button type="button" class="pulse-button" id="submitApplyBtn" style="margin: 0; padding: 8px 20px; font-size: 10px;">Transmit Data</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // --- Search functionality ---
+        $('#guildSearch').on('keyup', function() {
+            var value = $(this).val().toLowerCase();
+            $('#explore .guild-card').filter(function() {
+                var cardText = $(this).text().toLowerCase();
+                $(this).parent().toggle(cardText.indexOf(value) > -1);
+            });
+        });
+
+        // --- Apply to Guild Logic ---
+        $('.apply-btn').on('click', function() {
+            var guildName = $(this).data('guild-name');
+            var guildId = $(this).data('guild-id');
+            $('#modalGuildName').text(guildName);
+            $('#applyGuildId').val(guildId);
+            $('#applyMessage').val(''); // clear old
+            $('#applyFormSection').show();
+            $('#applySuccessSection').hide();
+            $('#submitApplyBtn').show().text('Transmit Data');
+        });
+
+        $('#submitApplyBtn').on('click', function() {
+            var btn = $(this);
+            var gId = $('#applyGuildId').val();
+            var msg = $('#applyMessage').val();
+            var stats = $('#applyShareStats').is(':checked');
+            
+            if(!msg) { alert("Please provide a message."); return; }
+            
+            btn.text('Encrypting...');
+            
+            $.ajax({
+                url: '/api/guild/apply/',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    guild_id: gId,
+                    username: '{{ user.username|default:"Cyber_Operative" }}',
+                    message: msg,
+                    share_stats: stats
+                }),
+                success: function(res) {
+                    $('#applyFormSection').slideUp();
+                    $('#applySuccessSection').fadeIn();
+                    btn.hide();
+                    setTimeout(function() { $('#applyModal').modal('hide'); }, 2500);
+                },
+                error: function() {
+                    alert("Network Error: Could not dispatch data.");
+                    btn.text('Transmit Data');
+                }
+            });
+        });
+
+        // --- Create Guild Logic ---
+        $('#createGuildForm').on('submit', function(e) {
+            e.preventDefault();
+            var btn = $('#submitGuildBtn');
+            btn.text('Initializing...');
+            
+            $.ajax({
+                url: '/api/guild/create/',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    name: $('#guildName').val(),
+                    tag: $('#guildTag').val(),
+                    game: $('#guildGame').val(),
+                    description: $('#guildDesc').val()
+                }),
+                success: function(res) {
+                    $('#createGuildForm').slideUp();
+                    $('#guildSuccess').fadeIn();
+                    // Reload page after a bit to show new guild in Explore
+                    setTimeout(function() { window.location.reload(); }, 2000);
+                },
+                error: function() {
+                    alert("System Failure: Could not establish syndicate.");
+                    btn.text('Initialize Guild Protocol');
+                }
+            });
+        });
+
+        // --- Create Recruitment Post Logic ---
+        $('#createPostForm').on('submit', function(e) {
+            e.preventDefault();
+            var btn = $('#submitPostBtn');
+            btn.text('Routing...');
+            
+            $.ajax({
+                url: '/api/guild/post/',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    guild_id: $('#postGuildId').val(),
+                    title: $('#postTitle').val(),
+                    description: $('#postDesc').val(),
+                    author: '{{ user.username|default:"Recruiter_99" }}'
+                }),
+                success: function(res) {
+                    $('#createPostForm')[0].reset();
+                    $('#postSuccess').fadeIn().delay(3000).fadeOut();
+                    btn.text('Execute Broadcast');
+                    // In a real app, we'd prepend the new post to #postsContainer directly here.
+                    // For now, refreshing page to show new post cleanly.
+                    setTimeout(function() { window.location.reload(); }, 1500);
+                },
+                error: function() {
+                    alert("Failure: Signal interrupted.");
+                    btn.text('Execute Broadcast');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

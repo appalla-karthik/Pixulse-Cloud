@@ -1,89 +1,10 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PIXULSE CLOUD</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'style.css' %}">
-</head>
-
-<body>
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-    <script src="{% static 'script.js' %}" defer></script>
-
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-    <div class="container-fluid">
-
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#mainNav">
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-
-            <a class="navbar-brand" href="#">
-    <img src="{% static 'img/logo.png' %}" alt="Pixulse Cloud">
-    <span class="brandname">PIXULSE CLOUD BETA</span>
-</a>
-
-        </div>
-
-        <!-- RIGHT SEARCH (Hidden in mobile) -->
-        <form class="navbar-form navbar-right hidden-xs">
-            <div class="search-container">
-                <button class="search-btn">
-                    <i class="glyphicon glyphicon-search"></i>
-                </button>
-                <div class="search-dropdown">
-                    <input type="text" class="search-input" placeholder="Search...">
-                </div>
-            </div>
-        </form>
-
-        <!-- COLLAPSING NAV LINKS -->
-        <div class="collapse navbar-collapse" id="mainNav">
-            
-
-            <ul class="nav navbar-nav navbar-right">
-                <li class="active"><a href="#" class="nav-button">HOME</a></li>
-                <li><a href="#" class="nav-button">USERVERSE</a></li>
-                <li><a href="#" class="nav-button">GUILDNEXUS</a></li>
-
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle nav-button" data-toggle="dropdown">
-                        ARENA INSIGHTS <span class="caret"></span>
-                    </a>
-                    <ul class="dropdown-menu custom-dropdown">
-                        <li><a href="#">Latest Trends</a></li>
-                        <li><a href="#">Industry Insights</a></li>
-                        <li><a href="#">Workshops</a></li>
-                    </ul>
-                </li>
-
-                <li><a href="#" class="nav-button">ESPORTS</a></li>
-
-                {% if user.is_authenticated %}
-                    <li><a href="{% url 'logout' %}">Logout</a></li>
-                {% else %}
-                    <li><a href="{% url 'login' %}" class="nav-button">LOGIN</a></li>
-                {% endif %}
-            </ul>
-        </div>
-
-    </div>
-</nav>
+{% block content %}
 
 
     {% if user.is_authenticated %}
-        <div style="height: 80px;"></div>
         <div class="welcome-box">
         <li>Hello, {{ user.first_name }} <span class="wave">👋</span></li>
     </div>
@@ -437,7 +358,4 @@
                 </div>
             </div>
         </div>
-    </div>
-</body>
-
-</html>
+{% endblock %}
