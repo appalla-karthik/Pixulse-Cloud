@@ -3,14 +3,18 @@ import subprocess
 import threading
 import os
 import sys
+import webbrowser
 
-# Constants for a sleek, professional Cyber-Tech UI
-APP_TITLE = "Pixulse Cloud - Input Engine Controller"
-BG_COLOR = "#0D0D12"       # Deep tech black
-FRAME_BG = "#15151E"       # Slightly lighter for contrast
-ACCENT_COLOR = "#00E5FF"   # Neon Cyan (No Pink)
-TEXT_COLOR = "#FFFFFF"     # White
-MUTED_TEXT = "#8B8B99"     # Grayed out text
+# Elegant, Minimalist, Classy UI Settings
+APP_TITLE = "Pixulse Cloud | Streamer"
+BG_COLOR = "#0B0C10"       # Deep obsidian black
+FRAME_BG = "#13151A"       # Subtle elevation color
+ACCENT_COLOR = "#45A29E"   # Elegant muted teal/cyan
+TEXT_COLOR = "#FFFFFF"     # Crisp White
+MUTED_TEXT = "#6B7280"     # Elegant gray for secondary text
+
+# Correct production URL
+STREAM_URL = "https://pixulse-signalling.onrender.com/streamer.html?room=game-1"
 
 class InputEngineDashboard(ctk.CTk):
     def __init__(self):
@@ -18,7 +22,7 @@ class InputEngineDashboard(ctk.CTk):
         
         # Configure window
         self.title(APP_TITLE)
-        self.geometry("700x500")
+        self.geometry("750x550")
         self.configure(fg_color=BG_COLOR)
         
         # Setup Theme
@@ -33,23 +37,31 @@ class InputEngineDashboard(ctk.CTk):
         # Determine paths
         if getattr(sys, 'frozen', False):
             self.base_dir = os.path.dirname(sys.executable)
+            self.webrtc_dir = os.path.normpath(os.path.join(self.base_dir, "webrtc_gamestreaming"))
+            icon_path = os.path.join(self.base_dir, "icon.ico")
         else:
             self.base_dir = os.path.dirname(os.path.abspath(__file__))
+            self.webrtc_dir = os.path.normpath(os.path.join(self.base_dir, "..", "webrtc_gamestreaming"))
+            icon_path = os.path.join(self.base_dir, "icon.ico")
             
-        self.webrtc_dir = os.path.normpath(os.path.join(self.base_dir, "..", "webrtc_gamestreaming"))
+        # Set Application Icon
+        if os.path.exists(icon_path):
+            self.iconbitmap(icon_path)
+
         
         self.create_widgets()
+        self.check_node_installed()
         
     def create_widgets(self):
         # --- Top Header ---
         header_frame = ctk.CTkFrame(self, fg_color="transparent")
-        header_frame.grid(row=0, column=0, padx=30, pady=(30, 10), sticky="ew")
+        header_frame.grid(row=0, column=0, padx=35, pady=(35, 10), sticky="ew")
         header_frame.grid_columnconfigure(0, weight=1)
         
         title_label = ctk.CTkLabel(
             header_frame, 
-            text="PIXULSE INPUT ENGINE", 
-            font=ctk.CTkFont(family="Segoe UI Black", size=28, weight="bold"),
+            text="PIXULSE STREAMER", 
+            font=ctk.CTkFont(family="Helvetica", size=24, weight="bold"),
             text_color=TEXT_COLOR,
             anchor="w"
         )
@@ -57,47 +69,63 @@ class InputEngineDashboard(ctk.CTk):
         
         subtitle_label = ctk.CTkLabel(
             header_frame,
-            text="Production-Grade Remote Input Handler",
-            font=ctk.CTkFont(family="Segoe UI", size=12),
+            text="Remote Input Controller",
+            font=ctk.CTkFont(family="Helvetica", size=13),
             text_color=MUTED_TEXT,
             anchor="w"
         )
         subtitle_label.grid(row=1, column=0, sticky="w")
         
         # --- Control Center Card ---
-        control_card = ctk.CTkFrame(self, fg_color=FRAME_BG, corner_radius=15, border_width=1, border_color="#2A2A35")
-        control_card.grid(row=1, column=0, padx=30, pady=10, sticky="nsew")
+        control_card = ctk.CTkFrame(self, fg_color=FRAME_BG, corner_radius=12)
+        control_card.grid(row=1, column=0, padx=35, pady=15, sticky="nsew")
         control_card.grid_columnconfigure(1, weight=1)
         control_card.grid_rowconfigure(0, weight=1)
         
-        # Left Side: Status & Button
+        # Left Side: Status & Buttons
         action_frame = ctk.CTkFrame(control_card, fg_color="transparent")
         action_frame.grid(row=0, column=0, padx=30, pady=30, sticky="ns")
         
         self.status_label = ctk.CTkLabel(
             action_frame, 
-            text="STATUS: OFFLINE", 
-            font=ctk.CTkFont(family="Segoe UI", size=14, weight="bold"),
-            text_color="#FF4C4C" # Red for offline
+            text="● Offline", 
+            font=ctk.CTkFont(family="Helvetica", size=15),
+            text_color="#EF4444" # Elegant Red
         )
-        self.status_label.pack(anchor="center", pady=(20, 10))
+        self.status_label.pack(anchor="center", pady=(20, 30))
         
         self.btn_toggle = ctk.CTkButton(
             action_frame, 
-            text="INITIALIZE ENGINE", 
-            font=ctk.CTkFont(family="Segoe UI", size=16, weight="bold"),
+            text="Start Engine", 
+            font=ctk.CTkFont(family="Helvetica", size=14, weight="bold"),
             fg_color=ACCENT_COLOR, 
-            text_color=BG_COLOR,
-            hover_color="#00B3CC",
-            corner_radius=8,
-            height=50,
-            width=220,
+            text_color="#000000",
+            hover_color="#66FCF1",
+            corner_radius=6,
+            height=42,
+            width=200,
             command=self.toggle_engine
         )
         self.btn_toggle.pack(anchor="center", pady=10)
         
-        # Right Side: Live Terminal Output
-        term_frame = ctk.CTkFrame(control_card, fg_color="#08080C", corner_radius=8)
+        self.btn_browser = ctk.CTkButton(
+            action_frame, 
+            text="Open Stream Page", 
+            font=ctk.CTkFont(family="Helvetica", size=14),
+            fg_color="transparent", 
+            text_color=TEXT_COLOR,
+            border_color="#374151",
+            border_width=1,
+            hover_color="#1F2937",
+            corner_radius=6,
+            height=42,
+            width=200,
+            command=self.open_browser
+        )
+        self.btn_browser.pack(anchor="center", pady=10)
+        
+        # Right Side: Minimalist Terminal
+        term_frame = ctk.CTkFrame(control_card, fg_color="#0B0C10", corner_radius=8, border_width=1, border_color="#1F2937")
         term_frame.grid(row=0, column=1, padx=(0, 30), pady=30, sticky="nsew")
         term_frame.grid_columnconfigure(0, weight=1)
         term_frame.grid_rowconfigure(0, weight=1)
@@ -107,24 +135,37 @@ class InputEngineDashboard(ctk.CTk):
             wrap="word", 
             font=ctk.CTkFont(family="Consolas", size=12),
             fg_color="transparent",
-            text_color="#00FF9D", # Terminal green/cyan
+            text_color=MUTED_TEXT,
         )
-        self.console.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+        self.console.grid(row=0, column=0, padx=15, pady=15, sticky="nsew")
         
-        self.log_message("System initialized. Awaiting user input...", "[SYSTEM]")
+        self.log_message("System initialized.")
         
         # --- Footer ---
         footer_label = ctk.CTkLabel(
             self,
-            text="Pixulse Cloud Streaming Architecture v1.0",
-            font=ctk.CTkFont(family="Segoe UI", size=10),
-            text_color=MUTED_TEXT
+            text="Pixulse Cloud © 2026",
+            font=ctk.CTkFont(family="Helvetica", size=11),
+            text_color="#4B5563"
         )
         footer_label.grid(row=2, column=0, pady=(0, 15))
 
-    def log_message(self, message, prefix="[INFO]"):
+    def log_message(self, message, prefix="[SYSTEM]"):
         self.console.insert("end", f"{prefix} {message}\n")
         self.console.see("end")
+        
+    def check_node_installed(self):
+        try:
+            result = subprocess.run(["node", "-v"], capture_output=True, text=True, check=False)
+            if result.returncode == 0:
+                self.log_message(f"Runtime verified: Node.js {result.stdout.strip()}")
+            else:
+                self.log_message("Runtime warning: Node.js not found in PATH.", "[WARN]")
+                self.btn_toggle.configure(state="disabled", text="Node.js Missing", fg_color="#374151")
+        except FileNotFoundError:
+            self.log_message("Runtime error: Node.js is not installed.", "[ERROR]")
+            self.log_message("Please download from https://nodejs.org", "[ERROR]")
+            self.btn_toggle.configure(state="disabled", text="Node.js Missing", fg_color="#374151")
         
     def read_process_output(self, process):
         while True:
@@ -132,7 +173,7 @@ class InputEngineDashboard(ctk.CTk):
             if output == '' and process.poll() is not None:
                 break
             if output:
-                self.log_message(output.strip(), prefix="[NODE]")
+                self.log_message(output.strip(), prefix="> ")
                 
     def toggle_engine(self):
         if self.input_process is None:
@@ -142,10 +183,10 @@ class InputEngineDashboard(ctk.CTk):
 
     def start_engine(self):
         if not os.path.exists(self.webrtc_dir):
-            self.log_message(f"ERROR: Target directory missing -> {self.webrtc_dir}", "[SYS]")
+            self.log_message(f"Directory missing: {self.webrtc_dir}", "[ERROR]")
             return
             
-        self.log_message("Establishing secure connection to Input Agent...", "[SYS]")
+        self.log_message("Starting input agent...")
         
         try:
             startupinfo = None
@@ -166,22 +207,26 @@ class InputEngineDashboard(ctk.CTk):
             threading.Thread(target=self.read_process_output, args=(self.input_process,), daemon=True).start()
             
             # Update UI
-            self.status_label.configure(text="STATUS: ONLINE", text_color=ACCENT_COLOR)
-            self.btn_toggle.configure(text="TERMINATE ENGINE", fg_color="#FF4C4C", text_color="#FFFFFF", hover_color="#CC0000")
+            self.status_label.configure(text="● Online", text_color=ACCENT_COLOR)
+            self.btn_toggle.configure(text="Stop Engine", fg_color="transparent", border_width=1, border_color="#EF4444", text_color="#EF4444", hover_color="#450a0a")
             
         except Exception as e:
-            self.log_message(f"Boot failure: {str(e)}", "[ERROR]")
+            self.log_message(f"Failed to start: {str(e)}", "[ERROR]")
 
     def stop_engine(self):
         if self.input_process:
-            self.log_message("Terminating Input Agent connection...", "[SYS]")
+            self.log_message("Stopping input agent...")
             subprocess.run(["taskkill", "/F", "/T", "/PID", str(self.input_process.pid)], capture_output=True)
             self.input_process = None
             
             # Update UI
-            self.status_label.configure(text="STATUS: OFFLINE", text_color="#FF4C4C")
-            self.btn_toggle.configure(text="INITIALIZE ENGINE", fg_color=ACCENT_COLOR, text_color=BG_COLOR, hover_color="#00B3CC")
-            self.log_message("Connection severed successfully.", "[SYS]")
+            self.status_label.configure(text="● Offline", text_color="#EF4444")
+            self.btn_toggle.configure(text="Start Engine", fg_color=ACCENT_COLOR, border_width=0, text_color="#000000", hover_color="#66FCF1")
+            self.log_message("Agent stopped.")
+            
+    def open_browser(self):
+        self.log_message(f"Opening stream page: {STREAM_URL}")
+        webbrowser.open(STREAM_URL)
             
     def on_closing(self):
         self.stop_engine()
